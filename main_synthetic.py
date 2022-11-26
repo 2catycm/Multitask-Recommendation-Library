@@ -122,23 +122,16 @@ def metatrain(model, optimizer, data_loader, device, log_interval=100):
 
 def test(model, data_loader, task_num, criterion, device):
     model.eval()
-    total_loss = 0
+    loss_lists = torch.Tensor([0,0]).to(device)
     loader = tqdm.tqdm(data_loader, smoothing=0, mininterval=1.0)
     for i, (categorical_fields, numerical_fields, labels) in enumerate(loader):
         categorical_fields, numerical_fields, labels = categorical_fields.to(device), numerical_fields.to(device), labels.to(device)
         y = model(categorical_fields, numerical_fields)
         loss_list = [criterion(y[i], labels[:, i].float()) for i in range(labels.size(1))]
         loss = 0
-        for item in loss_list:
-            loss += item
-        loss /= len(loss_list)
-        model.zero_grad()
-        loss.backward()
-        optimizer.step()
-        total_loss += loss.item()
-        if (i + 1) % log_interval == 0:
-            loader.set_postfix(loss=total_loss / log_interval)
-            total_loss = 0
+        for i, item in enumerate(loss_list):
+            loss_lists[i] += item
+    return loss_lists/len(data_loader)
 
 from torch.utils.data import random_split
 def main(dataset_name,
@@ -170,8 +163,8 @@ def main(dataset_name,
     field_dims = dataset.field_dims
     numerical_num = dataset.numerical_num
     model = get_model(model_name, field_dims, numerical_num, task_num, expert_num, embed_dim).to(device)
-    criterion = torch.nn.BCELoss()
-    # criterion = torch.nn.MSELoss()
+    # criterion = torch.nn.BCELoss()
+    criterion = torch.nn.MSELoss()
     optimizer = torch.optim.Adam(params=model.parameters(), lr=learning_rate, weight_decay=weight_decay)
     save_path=f'{save_dir}/{dataset_name}_{model_name}.pt'
     early_stopper = EarlyStopper(num_trials=2, save_path=save_path)
@@ -183,24 +176,24 @@ def main(dataset_name,
         else:
             train(model, optimizer, train_data_loader, criterion, device)
             
-        # auc, loss = test(model, test_data_loader, task_num, device)
-        # print('epoch:', epoch_i, 'test: auc:', auc)
-        # for i in range(task_num):
-        #     print('task {}, AUC {}, Log-loss {}'.format(i, auc[i], loss[i]))
+        losses = test(model, test_data_loader, task_num, criterion, device)
+        print('epoch:', epoch_i, 'test: loss:', losses.mean())
+        for i in range(task_num):
+            print('task {}, loss {}'.format(i, losses[i]))
         # if not early_stopper.is_continuable(model, np.array(auc).mean()):
         #     print(f'test: best auc: {early_stopper.best_accuracy}')
         #     break
 
-    # model.load_state_dict(torch.load(save_path))
+    model.load_state_dict(torch.load(save_path))
     # auc, loss = test(model, test_data_loader, task_num, device)
-    # f = open('{}_{}.txt'.format(model_name, dataset_name), 'a', encoding = 'utf-8')
-    # f.write('learning rate: {}\n'.format(learning_rate))
-    # for i in range(task_num):
-    #     print('task {}, AUC {}, Log-loss {}'.format(i, auc[i], loss[i]))
-    #     f.write('task {}, AUC {}, Log-loss {}\n'.format(i, auc[i], loss[i]))
-    # print('\n')
-    # f.write('\n')
-    # f.close()
+    f = open('{}_{}.txt'.format(model_name, dataset_name), 'a', encoding = 'utf-8')
+    f.write('learning rate: {}\n'.format(learning_rate))
+    for i in range(task_num):
+        print('task {}, Log-loss {}'.format(i, losses[i]))
+        f.write('task {}, Log-loss {}\n'.format(i, losses[i]))
+    print('\n')
+    f.write('\n')
+    f.close()
 
 
 if __name__ == '__main__':
