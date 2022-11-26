@@ -32,7 +32,7 @@ MTReclib provides a PyTorch implementation of multi-task recommendation models a
 
 Parameter Configuration:
 
-- dataset_name: choose a dataset in ['AliExpress_NL', 'AliExpress_FR', 'AliExpress_ES', 'AliExpress_US'], default for `AliExpress_NL`
+- dataset_name: choose a dataset in ['AliExpress_NL', 'AliExpress_FR', 'AliExpress_ES', 'AliExpress_US', 'Synthetic'], default for `AliExpress_NL`
 - dataset_path: default for `./data`
 - model_name: choose a model in ['singletask', 'sharedbottom', 'omoe', 'mmoe', 'ple', 'aitm', 'metaheac'], default for `metaheac`
 - epoch: the number of epochs for training, default for `50`

@@ -2,3 +2,5 @@
 *.iml
 target
 __pycache__
+*.csv
+*.pt
