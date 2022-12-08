@@ -5,7 +5,7 @@ import torch
 class SynDataset(torch.utils.data.Dataset):
     
     def __init__(self, dataset_path):
-        data = pd.read_csv(dataset_path).to_numpy()[:, 1:]
+        data = pd.read_csv(dataset_path).to_numpy()[:, 0:]
         self.categorical_data = data[:, 0:0].astype(np.int)
         self.numerical_data = data[:, : -2].astype(np.float32)
         self.labels = data[:, -2:].astype(np.float32)

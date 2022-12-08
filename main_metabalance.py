@@ -1,5 +1,5 @@
-# To run main_synthetic.py, use this code: 
-# python main_synthetic.py --model_name mmoe --expert_num 8 --dataset_name Synthetic --dataset_path ./synthetic_datasets
+# To run main.py, use this code: 
+# python main.py --model_name mmoe --expert_num 8 --dataset_name AliExpress_NL --dataset_path ../data
 
 import torch
 import tqdm
@@ -9,7 +9,6 @@ import os
 import numpy as np
 
 from datasets.aliexpress import AliExpressDataset
-from datasets.syndataset import SynDataset
 from models.sharedbottom import SharedBottomModel
 from models.singletask import SingleTaskModel
 from models.omoe import OMoEModel
@@ -22,8 +21,6 @@ from models.metaheac import MetaHeacModel
 def get_dataset(name, path):
     if 'AliExpress' in name:
         return AliExpressDataset(path)
-    elif 'Synthetic' in name:
-        return SynDataset(path)
     else:
         raise ValueError('unknown dataset name: ' + name)
 
@@ -31,6 +28,7 @@ def get_model(name, categorical_field_dims, numerical_num, task_num, expert_num,
     """
     Hyperparameters are empirically determined, not opitmized.
     """
+    
     if name == 'sharedbottom':
         print("Model: Shared-Bottom")
         return SharedBottomModel(categorical_field_dims, numerical_num, embed_dim=embed_dim, bottom_mlp_dims=(512, 256), tower_mlp_dims=(128, 64), task_num=task_num, dropout=0.2)
@@ -75,7 +73,7 @@ class EarlyStopper(object):
         else:
             return False
 
-def train(model, optimizer, data_loader, criterion, device, log_interval=1):
+def train(model, optimizer, data_loader, criterion, device, log_interval=100):
     model.train()
     total_loss = 0
     loader = tqdm.tqdm(data_loader, smoothing=0, mininterval=1.0)
@@ -121,20 +119,26 @@ def metatrain(model, optimizer, data_loader, device, log_interval=100):
             loader.set_postfix(loss=total_loss / log_interval)
             total_loss = 0
 
-def test(model, data_loader, task_num, criterion, device):
+def test(model, data_loader, task_num, device):
     model.eval()
-    loss_lists = torch.Tensor([0,0]).to(device)
-    loader = tqdm.tqdm(data_loader, smoothing=0, mininterval=1.0)
-    for i, (categorical_fields, numerical_fields, labels) in enumerate(loader):
-        categorical_fields, numerical_fields, labels = categorical_fields.to(device), numerical_fields.to(device), labels.to(device)
-        y = model(categorical_fields, numerical_fields)
-        loss_list = [criterion(y[i], labels[:, i].float()) for i in range(labels.size(1))]
-        loss = 0
-        for i, item in enumerate(loss_list):
-            loss_lists[i] += item
-    return loss_lists/len(data_loader)
+    labels_dict, predicts_dict, loss_dict = {}, {}, {}
+    for i in range(task_num):
+        labels_dict[i], predicts_dict[i], loss_dict[i] = list(), list(), list()
+    with torch.no_grad():
+        for categorical_fields, numerical_fields, labels in tqdm.tqdm(data_loader, smoothing=0, mininterval=1.0):
+            categorical_fields, numerical_fields, labels = categorical_fields.to(device), numerical_fields.to(device), labels.to(device)
+            y = model(categorical_fields, numerical_fields)
+            for i in range(task_num):
+                labels_dict[i].extend(labels[:, i].tolist())
+                predicts_dict[i].extend(y[i].tolist())
+                loss_dict[i].extend(torch.nn.functional.binary_cross_entropy(y[i], labels[:, i].float(), reduction='none').tolist())
+    auc_results, loss_results = list(), list()
+    for i in range(task_num):
+        auc_results.append(roc_auc_score(labels_dict[i], predicts_dict[i]))
+        loss_results.append(np.array(loss_dict[i]).mean())
+    return auc_results, loss_results
 
-from torch.utils.data import random_split
+
 def main(dataset_name,
          dataset_path,
          task_num,
@@ -148,59 +152,39 @@ def main(dataset_name,
          device,
          save_dir):
     device = torch.device(device)
-    dataset = get_dataset(dataset_name, dataset_path + '/syn_data1.csv')
-    print(len(dataset))
-    # 把一个dataset变成train和test
-    train_dataset, test_dataset = random_split(
-        dataset=dataset,
-         lengths=[0.8, 0.2],
-        generator=torch.Generator().manual_seed(0)
-    )
-    print(len(train_dataset))
-
+    train_dataset = get_dataset(dataset_name, os.path.join(dataset_path, dataset_name) + '/train.csv')
+    test_dataset = get_dataset(dataset_name, os.path.join(dataset_path, dataset_name) + '/test.csv')
     train_data_loader = DataLoader(train_dataset, batch_size=batch_size, num_workers=4, shuffle=True)
-    test_data_loader = DataLoader(test_dataset, batch_size=batch_size, num_workers=4, shuffle=True)
+    test_data_loader = DataLoader(test_dataset, batch_size=batch_size, num_workers=4, shuffle=False)
     print("Finished loading data")
-    field_dims = dataset.field_dims
-    numerical_num = dataset.numerical_num
+    field_dims = train_dataset.field_dims
+    numerical_num = train_dataset.numerical_num
     model = get_model(model_name, field_dims, numerical_num, task_num, expert_num, embed_dim).to(device)
-    # criterion = torch.nn.BCELoss()
-    criterion = torch.nn.MSELoss()
+    criterion = torch.nn.BCELoss()
     optimizer = torch.optim.Adam(params=model.parameters(), lr=learning_rate, weight_decay=weight_decay)
     save_path=f'{save_dir}/{dataset_name}_{model_name}.pt'
-    early_stopper = EarlyStopper(num_trials=1000, save_path=save_path)
+    early_stopper = EarlyStopper(num_trials=2, save_path=save_path)
     print("begin to train")
-    
-    
-    f0 = open('{}_{}0.txt'.format(model_name, dataset_name), 'a', encoding = 'utf-8')
-    
     for epoch_i in range(epoch):
         if model_name == 'metaheac':
             metatrain(model, optimizer, train_data_loader, device)
         else:
             train(model, optimizer, train_data_loader, criterion, device)
-            
-        losses = test(model, test_data_loader, task_num, criterion, device)
-        print('epoch:', epoch_i, 'test: loss:', losses.mean())
-        
-        f0.write('epoch {}, loss: {}\n'.format(epoch_i, losses.mean()))
-        
+        auc, loss = test(model, test_data_loader, task_num, device)
+        print('epoch:', epoch_i, 'test: auc:', auc)
         for i in range(task_num):
-            print('task {}, loss {}'.format(i, losses[i]))
-        if not early_stopper.is_continuable(model, losses.mean()):
-            print(f'test: best loss: {early_stopper.best_accuracy}')
+            print('task {}, AUC {}, Log-loss {}'.format(i, auc[i], loss[i]))
+        if not early_stopper.is_continuable(model, np.array(auc).mean()):
+            print(f'test: best auc: {early_stopper.best_accuracy}')
             break
-        
-    f0.write('\n')
-    f0.close()
 
     model.load_state_dict(torch.load(save_path))
-    # auc, loss = test(model, test_data_loader, task_num, device)
+    auc, loss = test(model, test_data_loader, task_num, device)
     f = open('{}_{}.txt'.format(model_name, dataset_name), 'a', encoding = 'utf-8')
     f.write('learning rate: {}\n'.format(learning_rate))
     for i in range(task_num):
-        print('task {}, Log-loss {}'.format(i, losses[i]))
-        f.write('task {}, Log-loss {}\n'.format(i, losses[i]))
+        print('task {}, AUC {}, Log-loss {}'.format(i, auc[i], loss[i]))
+        f.write('task {}, AUC {}, Log-loss {}\n'.format(i, auc[i], loss[i]))
     print('\n')
     f.write('\n')
     f.close()
@@ -210,18 +194,15 @@ if __name__ == '__main__':
     import argparse
 
     parser = argparse.ArgumentParser()
-    # parser.add_argument('--dataset_name', default='AliExpress_NL', choices=['AliExpress_NL', 'AliExpress_ES', 'AliExpress_FR', 'AliExpress_US', 'Synthetic'])
-    parser.add_argument('--dataset_name', default='Synthetic', choices=['AliExpress_NL', 'AliExpress_ES', 'AliExpress_FR', 'AliExpress_US', 'Synthetic'])
-    # parser.add_argument('--dataset_path', default='./data/')
-    parser.add_argument('--dataset_path', default='./synthetic_datasets')
-    parser.add_argument('--model_name', default='mmoe', choices=['singletask', 'sharedbottom', 'omoe', 'mmoe', 'ple', 'aitm', 'metaheac'])
+    parser.add_argument('--dataset_name', default='AliExpress_NL', choices=['AliExpress_NL', 'AliExpress_ES', 'AliExpress_FR', 'AliExpress_US'])
+    parser.add_argument('--dataset_path', default='./data/')
+    parser.add_argument('--model_name', default='metaheac', choices=['singletask', 'sharedbottom', 'omoe', 'mmoe', 'ple', 'aitm', 'metaheac'])
     parser.add_argument('--epoch', type=int, default=50)
     parser.add_argument('--task_num', type=int, default=2)
     parser.add_argument('--expert_num', type=int, default=8)
-    parser.add_argument('--learning_rate', type=float, default=0.0001)
+    parser.add_argument('--learning_rate', type=float, default=0.001)
     parser.add_argument('--batch_size', type=int, default=2048)
     parser.add_argument('--embed_dim', type=int, default=128)
-    # parser.add_argument('--embed_dim', type=int, default=0)
     parser.add_argument('--weight_decay', type=float, default=1e-6)
     parser.add_argument('--device', default='cuda:0')
     parser.add_argument('--save_dir', default='chkpt')

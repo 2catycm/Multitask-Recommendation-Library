@@ -13,10 +13,10 @@ def makenormal(u1, u2):
 
 
 if __name__ == "__main__":
-    d = 10 # Feature number
+    d = 50 # Feature number
     c = 1 # Scale constant
-    p = 0.1 # Pearson correlation 
-    datasize = 100000
+    p = 0.9 # Pearson correlation 
+    datasize = 500
     m = 0
 
     u1 = np.random.random(size=(d,))
@@ -32,10 +32,6 @@ if __name__ == "__main__":
     data = np.random.randn(datasize, d+2)
 
     out = open('./syn_data.csv', mode='w')
-    for i in range(d+1):
-        out.write(str(i)+",")
-    out.write(str(d+1)+"\n")
-
     for da in data:
         x = da[0:d]
         e = np.random.normal(0, 0.01, 2)
