@@ -37,3 +37,13 @@ class MMoEModel(torch.nn.Module):
         
         results = [torch.sigmoid(self.tower[i](task_fea[i]).squeeze(1)) for i in range(self.task_num)]
         return results
+
+    def parameters_selected(self, selected):
+        result = []
+        for i in selected:
+            result += list(i.parameters())
+        return result
+    def specific_parameters(self):
+        return self.parameters_selected([self.expert, self.tower, self.gate])
+    def shared_parameters(self):
+        return self.parameters_selected([self.embedding, self.numerical_layer])

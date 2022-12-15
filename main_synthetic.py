@@ -148,7 +148,8 @@ def main(dataset_name,
          device,
          save_dir):
     device = torch.device(device)
-    dataset = get_dataset(dataset_name, dataset_path + '/syn_data1.csv')
+    # dataset = get_dataset(dataset_name, dataset_path + '/syn_data1.csv')
+    dataset = get_dataset(dataset_name, dataset_path)
     print(len(dataset))
     # 把一个dataset变成train和test
     train_dataset, test_dataset = random_split(
@@ -164,8 +165,10 @@ def main(dataset_name,
     field_dims = dataset.field_dims
     numerical_num = dataset.numerical_num
     model = get_model(model_name, field_dims, numerical_num, task_num, expert_num, embed_dim).to(device)
-    # criterion = torch.nn.BCELoss()
-    criterion = torch.nn.MSELoss()
+    criterion = torch.nn.BCELoss()
+    # criterion = torch.nn.MSELoss()
+    
+    
     optimizer = torch.optim.Adam(params=model.parameters(), lr=learning_rate, weight_decay=weight_decay)
     save_path=f'{save_dir}/{dataset_name}_{model_name}.pt'
     early_stopper = EarlyStopper(num_trials=1000, save_path=save_path)

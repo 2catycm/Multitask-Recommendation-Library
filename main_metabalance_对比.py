@@ -138,6 +138,7 @@ def test(model, data_loader, task_num, criterion, device):
 def train(model, optimizer, data_loader, criterion, device, log_interval=1):
     model.train()
     total_loss = 0
+    total_losses = np.array([0, 0])
     loader = tqdm.tqdm(data_loader, smoothing=0, mininterval=1.0)
     for i, (categorical_fields, numerical_fields, labels) in enumerate(loader):
         categorical_fields, numerical_fields, labels = categorical_fields.to(
@@ -146,8 +147,10 @@ def train(model, optimizer, data_loader, criterion, device, log_interval=1):
         loss_list = [criterion(y[i], labels[:, i].float())
                      for i in range(labels.size(1))]
         loss = 0
-        for item in loss_list:
+        for j, item in enumerate(loss_list):
             loss += item
+            total_losses[j]+= (item.detach().cpu().numpy()- total_losses[j])/(i+1)
+            
         loss /= len(loss_list)
         model.zero_grad()
         loss.backward()
@@ -156,7 +159,7 @@ def train(model, optimizer, data_loader, criterion, device, log_interval=1):
         if (i + 1) % log_interval == 0:
             loader.set_postfix(loss=total_loss / log_interval)
             total_loss = 0
-
+    return total_losses
 
 
 
@@ -218,8 +221,7 @@ def main(dataset_name,
          device,
          save_dir):
     device = torch.device(device)
-    # dataset = get_dataset(dataset_name, dataset_path + '/syn_data1.csv')
-    dataset = get_dataset(dataset_name, dataset_path)
+    dataset = get_dataset(dataset_name, dataset_path + '/syn_data1.csv')
     print(len(dataset))
     # 把一个dataset变成train和test
     train_dataset, test_dataset = random_split(
@@ -252,6 +254,8 @@ def main(dataset_name,
     optimizer_taskLayer = torch.optim.Adam(
         model.specific_parameters(), lr=learning_rate, weight_decay=weight_decay)
 
+    optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate,weight_decay=weight_decay)
+
     # 存储模型。
     save_path = f'{save_dir}/{dataset_name}_{model_name}.pt'
     early_stopper = EarlyStopper(num_trials=1000, save_path=save_path)
@@ -263,9 +267,16 @@ def main(dataset_name,
     for epoch_i in range(epoch):
         if model_name == 'metaheac':
             metatrain(model, optimizer, train_data_loader, device)
+            
         else:
-            train_lossed = train_metabalance(model, optimizer_taskLayer, optimizer_sharedLayer,
-                              metabalance, train_data_loader, criterion, device)
+            # train_lossed = train_metabalance(model, optimizer_taskLayer, optimizer_sharedLayer,
+            #                   metabalance, train_data_loader, criterion, device)
+
+            
+            train_lossed = train(model, optimizer,
+                                 train_data_loader, criterion, device)
+            
+            
             tensorboard.add_scalar('train-loss-total', train_lossed.mean(), epoch_i)
             for j, loss in enumerate(train_lossed):
                 tensorboard.add_scalar('train-loss' + str(j), loss, epoch_i)
