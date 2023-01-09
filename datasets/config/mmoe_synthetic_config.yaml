@@ -1,0 +1,21 @@
+# 读取用的参数
+# Train/val/test sets as 1) dir: path/to/imgs, 2) file: path/to/imgs.txt, or 3) list: [path/to/imgs1, path/to/imgs2, ..]
+# path: ../datasets/coco128  # dataset root dir
+path:  # dataset root dir
+train: # train images (relative to 'path') 128 images
+
+val: # val images (relative to 'path') 128 images
+
+test: #optional
+
+# 生成用的参数
+download_url:
+preprocess:
+  py_file: 'datasets/preprocess/mmoe-synthetic_gen.py'
+  args:
+    path: 
+    datasize: 500
+    feature_num: 50   # 输入的维度
+    scale: 1          # Scale constant
+    correlation: 0.9  # Pearson correlation
+    m: 0              # 是否增加随机干扰
