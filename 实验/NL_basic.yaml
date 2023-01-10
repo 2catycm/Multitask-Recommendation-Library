@@ -1,0 +1,16 @@
+dataset_name: 'AliExpress_NL' # choices=['AliExpress_NL', 'AliExpress_ES', 'AliExpress_FR', 'AliExpress_US']
+dataset_path: './data/'
+model_name: 'metaheac' # choices=['singletask', 'sharedbottom', 'omoe', 'mmoe', 'ple', 'aitm', 'metaheac']
+epoch: 50
+task_num: 2
+expert_num: 8
+learning_rate: 1.0e-3
+batch_size: 2048
+embed_dim: 128
+weight_decay: 1.0e-6
+device: 0,1,2,3
+save_dir: 'runs/NL_basic'
+
+patience: 10
+min_delta: 0
+cumulative_delta: false

@@ -1,5 +1,5 @@
-# To run main.py, use this code: python main.py --model_name mmoe --expert_num 8 --dataset_name AliExpress_NL --dataset_path ../data
-
+# To run main.py, use this code: python train.py --params 
+#%%
 import torch
 import tqdm
 from sklearn.metrics import roc_auc_score
@@ -7,67 +7,11 @@ from torch.utils.data import DataLoader
 import os
 import numpy as np
 
-
-from models.sharedbottom import SharedBottomModel
-from models.singletask import SingleTaskModel
-from models.omoe import OMoEModel
-from models.mmoe import MMoEModel
-# from models.ple import PLEModel
-from models.aitm import AITMModel
-from models.metaheac import MetaHeacModel
-
-
 from datasets import get_dataset
+from models import get_model
 
-def get_model(name, categorical_field_dims, numerical_num, task_num, expert_num, embed_dim):
-    """
-    Hyperparameters are empirically determined, not opitmized.
-    """
-    
-    if name == 'sharedbottom':
-        print("Model: Shared-Bottom")
-        return SharedBottomModel(categorical_field_dims, numerical_num, embed_dim=embed_dim, bottom_mlp_dims=(512, 256), tower_mlp_dims=(128, 64), task_num=task_num, dropout=0.2)
-    elif name == 'singletask':
-        print("Model: SingleTask")
-        return SingleTaskModel(categorical_field_dims, numerical_num, embed_dim=embed_dim, bottom_mlp_dims=(512, 256), tower_mlp_dims=(128, 64), task_num=task_num, dropout=0.2)
-    elif name == 'omoe':
-        print("Model: OMoE")
-        return OMoEModel(categorical_field_dims, numerical_num, embed_dim=embed_dim, bottom_mlp_dims=(512, 256), tower_mlp_dims=(128, 64), task_num=task_num, expert_num=expert_num, dropout=0.2)
-    elif name == 'mmoe':
-        print("Model: MMoE")
-        return MMoEModel(categorical_field_dims, numerical_num, embed_dim=embed_dim, bottom_mlp_dims=(512, 256), tower_mlp_dims=(128, 64), task_num=task_num, expert_num=expert_num, dropout=0.2)
-    elif name == 'ple':
-        print("Model: PLE")
-        return PLEModel(categorical_field_dims, numerical_num, embed_dim=embed_dim, bottom_mlp_dims=(512, 256), tower_mlp_dims=(128, 64), task_num=task_num, shared_expert_num=int(expert_num / 2), specific_expert_num=int(expert_num / 2), dropout=0.2)
-    elif name == 'aitm':
-        print("Model: AITM")
-        return AITMModel(categorical_field_dims, numerical_num, embed_dim=embed_dim, bottom_mlp_dims=(512, 256), tower_mlp_dims=(128, 64), task_num=task_num, dropout=0.2)
-    elif name == 'metaheac':
-        print("Model: MetaHeac")
-        return MetaHeacModel(categorical_field_dims, numerical_num, embed_dim=embed_dim, bottom_mlp_dims=(512, 256), tower_mlp_dims=(128, 64), task_num=task_num, expert_num=expert_num, critic_num=5, dropout=0.2)
-    else:
-        raise ValueError('unknown model name: ' + name)
-
-class EarlyStopper(object):
-
-    def __init__(self, num_trials, save_path):
-        self.num_trials = num_trials
-        self.trial_counter = 0
-        self.best_accuracy = 0
-        self.save_path = save_path
-
-    def is_continuable(self, model, accuracy):
-        if accuracy > self.best_accuracy:
-            self.best_accuracy = accuracy
-            self.trial_counter = 0
-            torch.save(model.state_dict(), self.save_path)
-            return True
-        elif self.trial_counter + 1 < self.num_trials:
-            self.trial_counter += 1
-            return True
-        else:
-            return False
-
+from utils.early_stopper import EarlyStopper
+#%%
 def train(model, optimizer, data_loader, criterion, device, log_interval=100):
     model.train()
     total_loss = 0
@@ -134,18 +78,36 @@ def test(model, data_loader, task_num, device):
     return auc_results, loss_results
 
 
-def main(dataset_name,
-         dataset_path,
-         task_num,
-         expert_num,
-         model_name,
-         epoch,
-         learning_rate,
-         batch_size,
-         embed_dim,
-         weight_decay,
-         device,
-         save_dir):
+def main(args):
+    """_summary_
+
+    Args:
+        dataset_name (_type_): _description_
+        dataset_path (_type_): _description_
+        task_num (_type_): _description_
+        expert_num (_type_): _description_
+        model_name (_type_): _description_
+        epoch (_type_): _description_
+        learning_rate (_type_): _description_
+        batch_size (_type_): _description_
+        embed_dim (_type_): _description_
+        weight_decay (_type_): _description_
+        device (_type_): _description_
+        save_dir (_type_): _description_
+    """
+    dataset_name=args.dataset_name
+    dataset_path=args.dataset_path
+    task_num=args.task_num
+    expert_num=args.expert_num
+    model_name=args.model_name
+    epoch=args.epoch
+    learning_rate=args.learning_rate
+    batch_size=args.batch_size
+    embed_dim=args.embed_dim
+    weight_decay=args.weight_decay
+    device=args.device
+    save_dir=args.save_dir
+    
     device = torch.device(device)
     train_dataset = get_dataset(dataset_name, os.path.join(dataset_path, dataset_name) + '/train.csv')
     test_dataset = get_dataset(dataset_name, os.path.join(dataset_path, dataset_name) + '/test.csv')
@@ -155,10 +117,13 @@ def main(dataset_name,
     field_dims = train_dataset.field_dims
     numerical_num = train_dataset.numerical_num
     model = get_model(model_name, field_dims, numerical_num, task_num, expert_num, embed_dim).to(device)
+    
     criterion = torch.nn.BCELoss()
+    
     optimizer = torch.optim.Adam(params=model.parameters(), lr=learning_rate, weight_decay=weight_decay)
     save_path=f'{save_dir}/{dataset_name}_{model_name}.pt'
-    early_stopper = EarlyStopper(num_trials=2, save_path=save_path)
+    early_stopper = EarlyStopper(args.patience, args.min_delta, args.cumulative_delta)
+    
     print("begin to train")
     for epoch_i in range(epoch):
         if model_name == 'metaheac':
@@ -184,34 +149,15 @@ def main(dataset_name,
     f.write('\n')
     f.close()
 
-
+import argparse
+import yaml
 if __name__ == '__main__':
-    import argparse
-
+    
     parser = argparse.ArgumentParser()
-    parser.add_argument('--dataset_name', default='AliExpress_NL', choices=['AliExpress_NL', 'AliExpress_ES', 'AliExpress_FR', 'AliExpress_US'])
-    parser.add_argument('--dataset_path', default='./data/')
-    parser.add_argument('--model_name', default='metaheac', choices=['singletask', 'sharedbottom', 'omoe', 'mmoe', 'ple', 'aitm', 'metaheac'])
-    parser.add_argument('--epoch', type=int, default=50)
-    parser.add_argument('--task_num', type=int, default=2)
-    parser.add_argument('--expert_num', type=int, default=8)
-    parser.add_argument('--learning_rate', type=float, default=0.001)
-    parser.add_argument('--batch_size', type=int, default=2048)
-    parser.add_argument('--embed_dim', type=int, default=128)
-    parser.add_argument('--weight_decay', type=float, default=1e-6)
-    parser.add_argument('--device', default='cuda:0')
-    parser.add_argument('--save_dir', default='chkpt')
+    parser.add_argument('--param', '--params', '-p', default='实验/NL_basic.yaml')
     args = parser.parse_args()
-    print("begin main")
-    main(args.dataset_name,
-         args.dataset_path,
-         args.task_num,
-         args.expert_num,
-         args.model_name,
-         args.epoch,
-         args.learning_rate,
-         args.batch_size,
-         args.embed_dim,
-         args.weight_decay,
-         args.device,
-         args.save_dir)
+    with open(args.param, 'r', encoding='utf-8') as f:
+        args = yaml.load(f, Loader=yaml.FullLoader)
+    print(args)
+    main(args)
+    
