@@ -1,6 +1,11 @@
 from abc import abstractmethod
 import numpy as np
 import tqdm
+import wandb
+
+
+max_i = 1000000 #正常训练
+# max_i = 100 #debug
 
 def get_trainer(model_name, do_balance, **kargs):
     if model_name == 'metaheac':
@@ -23,10 +28,12 @@ class DefaultTrainer(MultitaskTrainer):
         self.criterion = criterion
         self.device = device
         self.log_interval = log_interval
+        self.epoch = 0
     
     def train_epoch(self):
         self.model.train()
         total_loss = 0
+        epoch_losses = 0
         loader = tqdm.tqdm(self.data_loader, smoothing=0, mininterval=1.0)
         for i, (categorical_fields, numerical_fields, labels) in enumerate(loader):
             categorical_fields, numerical_fields, labels = categorical_fields.to(self.device), numerical_fields.to(self.device), labels.to(self.device)
@@ -42,7 +49,13 @@ class DefaultTrainer(MultitaskTrainer):
             total_loss += loss.item()
             if (i + 1) % self.log_interval == 0:
                 loader.set_postfix(loss=total_loss / self.log_interval)
+                wandb.log({'step_loss':total_loss / self.log_interval, 'epoch': self.epoch, 'step': i})
+                epoch_losses = loss_list
                 total_loss = 0
+            if i>max_i:
+                break
+        self.epoch +=1
+        return epoch_losses
 
 
 class MetaTrainer(MultitaskTrainer):
@@ -53,9 +66,11 @@ class MetaTrainer(MultitaskTrainer):
         self.data_loader = data_loader
         self.device = device
         self.log_interval = log_interval
+        self.epoch = 0
     def train_epoch(self):
         self.model.train()
         total_loss = 0
+        epoch_losses = 0
         loader = tqdm.tqdm(self.data_loader, smoothing=0, mininterval=1.0)
         list_sup_categorical, list_sup_numerical, list_sup_y, list_qry_categorical, list_qry_numerical, list_qry_y = list(), list(), list(), list(), list(), list()
         for i, (categorical_fields, numerical_fields, labels) in enumerate(loader):
@@ -77,7 +92,13 @@ class MetaTrainer(MultitaskTrainer):
                 list_sup_categorical, list_sup_numerical, list_sup_y, list_qry_categorical, list_qry_numerical, list_qry_y = list(), list(), list(), list(), list(), list()
             if (i + 1) % self.log_interval == 0:
                 loader.set_postfix(loss=total_loss / self.log_interval)
+                wandb.log({'step_loss':total_loss / self.log_interval, 'epoch': self.epoch, 'step': i})
+                epoch_losses  = total_loss
                 total_loss = 0
+            if i>max_i:
+                break
+        self.epoch +=1
+        return [epoch_losses]
 
     
 
@@ -92,6 +113,8 @@ class BalanceTrainer(MultitaskTrainer):
         self.criterion = criterion
         self.device = device
         self.log_interval = log_interval
+        self.epoch = 0
+        
     def train_epoch(self):
         self.model.train()
         total_loss = 0
@@ -121,7 +144,11 @@ class BalanceTrainer(MultitaskTrainer):
             total_loss += loss.item()
             if (i + 1) % log_interval == 0:
                 tqdmloader.set_postfix(loss=total_loss / log_interval)
+                wandb.log({'step_loss':total_loss / self.log_interval, 'epoch': self.epoch, 'step': i})
                 total_loss = 0
-            return total_losses
+            if i>max_i:
+                break
+        self.epoch +=1
+        return total_losses
 
     

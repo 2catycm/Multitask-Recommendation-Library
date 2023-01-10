@@ -17,7 +17,8 @@ from models.aitm import AITMModel
 from models.metaheac import MetaHeacModel
 from models.abstract_multitask_model import MultitaskModel
 
-def get_model(name, categorical_field_dims, numerical_num, task_num, expert_num, embed_dim)->MultitaskModel:
+# def get_model(name, categorical_field_dims, numerical_num, task_num, expert_num, embed_dim)->MultitaskModel:
+def get_model(name, categorical_field_dims, numerical_num, task_num, expert_num, embed_dim):
     """
     Hyperparameters are empirically determined, not opitmized.
     """

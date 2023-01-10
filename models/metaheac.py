@@ -102,7 +102,7 @@ class HeacModel(torch.nn.Module):
 
         gate_input_emb = []
         for i in range(self.task_num):
-            idxs = torch.tensor([i for j in range(batch_size)]).view(-1, 1).cuda()
+            idxs = torch.tensor([i for j in range(batch_size)]).view(-1, 1).to(categorical_x.device)
             task_emb = self.task_embedding(idxs).squeeze(1)
             gate_input_emb.append(torch.cat([task_emb, torch.mean(emb, dim=1)], dim=1).view(batch_size, -1))
         

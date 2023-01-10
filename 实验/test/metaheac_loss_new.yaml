@@ -11,8 +11,8 @@ weights:
 
 # 3. 基础loss的选择
 
-# categorical_loss: AUCMLoss
-categorical_loss: BCELoss
+categorical_loss: AUCMLoss
+# categorical_loss: BCELoss
 numeric_loss: 
 
 # 3.1离散型分类任务
@@ -24,8 +24,8 @@ numeric_loss:
 
 # 4. 优化器
 # 4.1 基础优化器
-# optimizer_name: PESG
-optimizer_name: Adam
+optimizer_name: PESG
+# optimizer_name: Adam
 lr: 1.0e-3
 weight_decay: 1.0e-6
 
@@ -41,12 +41,12 @@ balancer_name: MetaBalance
 
 # 7. 训练过程有关参数
 # 训练
-device_num: 0
-save_dir: 'runs/NL_basic'
+device_num: 1
+save_dir: 'runs/NL_basic/test'
 save_epoch: 4
 
 # 经典参数
-max_epochs: 50
+max_epochs: 1
 batch_size: 2048
 
 # early stop

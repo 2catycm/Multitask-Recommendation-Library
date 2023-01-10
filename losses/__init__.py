@@ -10,10 +10,10 @@ if str(project_directory) not in sys.path:
 from libauc.losses import AUCMLoss
 from torch.nn import BCELoss, MSELoss
 
-def get_loss(loss_name):
+def get_loss(loss_name, device):
     lower_name = loss_name.lower()
     return {
         'bceloss':BCELoss(),
         'mseloss':MSELoss(),
-        'aucmloss':AUCMLoss(),
+        'aucmloss':AUCMLoss(device=device),
     }[lower_name]
