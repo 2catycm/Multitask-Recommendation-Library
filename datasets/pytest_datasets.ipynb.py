@@ -21,5 +21,5 @@ assert data is not None
 # test2
 data = get_dataset('AliExpress', 'AliExpress_NL/test.csv')
 assert data is not None
-len(data)
+len(data) #555, 9301 超级大。
 # %%

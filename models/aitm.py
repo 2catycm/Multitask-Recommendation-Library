@@ -1,6 +1,6 @@
 import torch
 import numpy as np
-from .layers import EmbeddingLayer, MultiLayerPerceptron
+from models.layers import EmbeddingLayer, MultiLayerPerceptron
 
 
 class AITMModel(torch.nn.Module):

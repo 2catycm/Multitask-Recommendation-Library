@@ -1,5 +1,5 @@
 import torch
-from .layers import EmbeddingLayer, MultiLayerPerceptron
+from models.layers import EmbeddingLayer, MultiLayerPerceptron
 
 
 class SingleTaskModel(torch.nn.Module):

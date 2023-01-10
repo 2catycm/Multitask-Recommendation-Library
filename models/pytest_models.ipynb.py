@@ -1,3 +1,12 @@
+#%%
+from pathlib import Path
+this_file = Path(__file__).resolve().absolute()
+this_directory = this_file.parent
+project_directory = this_directory.parent
+import sys
+if str(project_directory) not in sys.path:
+    sys.path.append(str(project_directory))
+#%%
 import os
 os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
 
@@ -27,3 +36,6 @@ specific_expert_num=int(expert_num / 2), dropout=0.2)
 print(model)
 out_put=model(categorical_x,numerical_x)
 print([item.shape for item in out_put])
+# %%
+assert model is not None
+assert out_put is not None

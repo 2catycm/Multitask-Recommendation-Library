@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from abstract_dataset import MultitaskDataset
+from datasets.abstract_dataset import MultitaskDataset
 class AliExpressDataset(MultitaskDataset):
     """
     AliExpress Dataset
