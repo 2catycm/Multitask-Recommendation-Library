@@ -3,7 +3,6 @@ import numpy as np
 import torch.utils.data
 
 class MultitaskDataset(torch.utils.data.Dataset):
-    @abstractmethod
     def set_param(self, categorical_data, numerical_data, labels, labels_type=None, categorical_num=None, 
                  numerical_num=None, labels_num=None, field_dims=None) -> None:
         """多任务学习典型的数据集。

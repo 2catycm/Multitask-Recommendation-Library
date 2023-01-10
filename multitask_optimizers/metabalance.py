@@ -12,12 +12,6 @@ from torch.optim.optimizer import Optimizer
 import time
 import numpy as np
 
-torch.manual_seed(0)
-np.random.seed(0)
-torch.backends.cudnn.deterministic = True
-torch.backends.cudnn.benchmark = False
-
-
 
 class MetaBalance(Optimizer):
     r"""Implements MetaBalance algorithm.

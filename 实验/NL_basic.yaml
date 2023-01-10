@@ -8,9 +8,11 @@ learning_rate: 1.0e-3
 batch_size: 2048
 embed_dim: 128
 weight_decay: 1.0e-6
-device: 0,1,2,3
+device: '0,1,2,3'
 save_dir: 'runs/NL_basic'
+save_epoch: 4
 
 patience: 10
 min_delta: 0
 cumulative_delta: false
+

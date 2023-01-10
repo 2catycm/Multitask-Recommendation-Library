@@ -13,7 +13,10 @@ from contextlib import contextmanager
 from copy import deepcopy
 from pathlib import Path
 
+import numpy as np
+
 import torch
+import torch.backends.cudnn
 import torch.distributed as dist
 import torch.nn as nn
 import torch.nn.functional as F
@@ -33,6 +36,14 @@ except ImportError:
 # Suppress PyTorch warnings
 warnings.filterwarnings('ignore', message='User provided device_type of \'cuda\', but CUDA is not available. Disabling')
 warnings.filterwarnings('ignore', category=UserWarning)
+
+
+
+def make_exp_reproducible(SEED=3407):
+    torch.manual_seed(SEED)
+    np.random.seed(SEED)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
 
 
 def smart_inference_mode(torch_1_9=check_version(torch.__version__, '1.9.0')):

@@ -1,8 +1,9 @@
 import torch
 from models.layers import EmbeddingLayer, MultiLayerPerceptron
+from models.abstract_multitask_model import MultitaskModel
 
 
-class CGCModel(torch.nn.Module):
+class CGCModel(MultitaskModel):
     """
     A pytorch implementation of MMoE Model.
 
@@ -18,9 +19,12 @@ class CGCModel(torch.nn.Module):
         self.task_num = task_num
         self.expert_num = expert_num
 
-        self.expert = torch.nn.ModuleList([MultiLayerPerceptron(self.embed_output_dim, bottom_mlp_dims, dropout, output_layer=False) for i in range(expert_num)])
-        self.tower = torch.nn.ModuleList([MultiLayerPerceptron(bottom_mlp_dims[-1], tower_mlp_dims, dropout) for i in range(task_num)])
-        self.gate = torch.nn.ModuleList([torch.nn.Sequential(torch.nn.Linear(self.embed_output_dim, expert_num), torch.nn.Softmax(dim=1)) for i in range(task_num)])
+        self.expert = torch.nn.ModuleList([MultiLayerPerceptron(
+            self.embed_output_dim, bottom_mlp_dims, dropout, output_layer=False) for i in range(expert_num)])
+        self.tower = torch.nn.ModuleList([MultiLayerPerceptron(
+            bottom_mlp_dims[-1], tower_mlp_dims, dropout) for i in range(task_num)])
+        self.gate = torch.nn.ModuleList([torch.nn.Sequential(torch.nn.Linear(
+            self.embed_output_dim, expert_num), torch.nn.Softmax(dim=1)) for i in range(task_num)])
 
     def forward(self, categorical_x, numerical_x):
         """
@@ -30,10 +34,21 @@ class CGCModel(torch.nn.Module):
         """
         categorical_emb = self.embedding(categorical_x)
         numerical_emb = self.numerical_layer(numerical_x).unsqueeze(1)
-        emb = torch.cat([categorical_emb, numerical_emb], 1).view(-1, self.embed_output_dim)
-        gate_value = [self.gate[i](emb).unsqueeze(1) for i in range(self.task_num)]
-        fea = torch.cat([self.expert[i](emb).unsqueeze(1) for i in range(self.expert_num)], dim = 1)
-        task_fea = [torch.bmm(gate_value[i], fea).squeeze(1) for i in range(self.task_num)]
-        
-        results = [torch.sigmoid(self.tower[i](task_fea[i]).squeeze(1)) for i in range(self.task_num)]
+        emb = torch.cat([categorical_emb, numerical_emb],
+                        1).view(-1, self.embed_output_dim)
+        gate_value = [self.gate[i](emb).unsqueeze(1)
+                      for i in range(self.task_num)]
+        fea = torch.cat([self.expert[i](emb).unsqueeze(1)
+                        for i in range(self.expert_num)], dim=1)
+        task_fea = [torch.bmm(gate_value[i], fea).squeeze(1)
+                    for i in range(self.task_num)]
+
+        results = [torch.sigmoid(self.tower[i](task_fea[i]).squeeze(1))
+                   for i in range(self.task_num)]
         return results
+
+    def specific_parameters(self):
+        return self.parameters_selected([self.expert, self.tower, self.gate])
+
+    def shared_parameters(self):
+        return self.parameters_selected([])
