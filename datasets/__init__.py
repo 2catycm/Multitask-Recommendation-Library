@@ -10,6 +10,11 @@ if str(project_directory) not in sys.path:
 
 from datasets.aliexpress import AliExpressDataset
 from datasets.mmoe_synthetic import SynDataset
+
+import joblib
+memory = joblib.Memory('./joblib_tmp', verbose=1)
+
+@memory.cache
 def get_dataset(type, path):
     """数据集工厂
 

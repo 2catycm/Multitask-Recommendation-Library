@@ -22,6 +22,7 @@ from utils.general import LOGGER, colorstr, yaml_load
 
 from val import *
 
+from munch import DefaultMunch
 #%%
 def main(dataset_name,dataset_path,task_num,
          expert_num,model_name,epoch,
@@ -43,7 +44,8 @@ def main(dataset_name,dataset_path,task_num,
         weight_decay (_type_): _description_
         device (_type_): _description_
         save_dir (_type_): _description_
-    """    
+    """
+    kwargs = DefaultMunch.fromDict(kwargs)    
     torch_utils.make_exp_reproducible()
     device = torch_utils.select_device(device)
     # 1. 数据集
@@ -57,6 +59,13 @@ def main(dataset_name,dataset_path,task_num,
     field_dims = train_dataset.field_dims
     numerical_num = train_dataset.numerical_num
     model = get_model(model_name, field_dims, numerical_num, task_num, expert_num, embed_dim).to(device)
+    if 'compile' in dir(torch):
+        LOGGER.info(f"{colorstr('Pytorch 2.0')} detected, compiling the model to speed up. ")
+        model = torch.compile(model, mode="max-autotune")
+        # model = torch.compile(model, mode="max-autotune", fullgraph=True, backend='Eager')
+        # model = torch.compile(model, mode="max-autotune", fullgraph=True)
+        LOGGER.info(f"{colorstr('Pytorch 2.0')} compilation done. ")
+    
     # 3. 损失函数： TODO 根据多任务获得离散型和连续型的损失函数
     # 3.1离散型分类任务
     # 3.1.1普通分布
@@ -78,11 +87,11 @@ def main(dataset_name,dataset_path,task_num,
     # multitask_optimizer = MetaBalance(model.shared_parameters())
 
     # 5. 获得训练器
-    trainer = get_trainer(model_name, 
-                          optimizer=optimizer, train_data_loader=train_data_loader, 
+    trainer = get_trainer(model_name, model=model, 
+                          optimizer=optimizer, data_loader=train_data_loader, 
                           criterion=criterion, device=device)
 
-    early_stopper = EarlyStopper(args.patience, args.min_delta, args.cumulative_delta)
+    early_stopper = EarlyStopper(kwargs.patience, kwargs.min_delta, kwargs.cumulative_delta)
     
     # 创建新的实验记录
     save_dir = Path(save_dir).resolve().absolute()

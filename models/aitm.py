@@ -1,9 +1,9 @@
 import torch
 import numpy as np
 from models.layers import EmbeddingLayer, MultiLayerPerceptron
+from models.abstract_multitask_model import MultitaskModel
 
-
-class AITMModel(torch.nn.Module):
+class AITMModel(MultitaskModel):
     """
     A pytorch implementation of Adaptive Information Transfer Multi-task Model.
 
@@ -49,3 +49,9 @@ class AITMModel(torch.nn.Module):
 
         results = [torch.sigmoid(self.tower[i](fea[i]).squeeze(1)) for i in range(self.task_num)]
         return results
+    
+    def specific_parameters(self):
+        return self.parameters_selected([self.bottom, self.tower, self.g])
+
+    def shared_parameters(self):
+        return self.parameters_selected([self.embedding, self.numerical_layer, self.h1, self.h2, self.h3])

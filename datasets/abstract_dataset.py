@@ -35,3 +35,4 @@ class MultitaskDataset(torch.utils.data.Dataset):
 
     def __getitem__(self, index):
         return self.categorical_data[index], self.numerical_data[index], self.labels[index]
+    
