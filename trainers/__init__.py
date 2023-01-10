@@ -2,11 +2,12 @@ from abc import abstractmethod
 import numpy as np
 import tqdm
 
-def get_trainer(model_name, **kargs):
+def get_trainer(model_name, do_balance, **kargs):
     if model_name == 'metaheac':
+        assert not do_balance
         return MetaTrainer(**kargs)
     else:
-        return DefaultTrainer(**kargs)
+        return DefaultTrainer(**kargs) if not do_balance else BalanceTrainer(**kargs)
         
 class MultitaskTrainer:
     @abstractmethod

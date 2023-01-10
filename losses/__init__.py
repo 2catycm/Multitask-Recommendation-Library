@@ -6,12 +6,14 @@ project_directory = this_directory.parent
 import sys
 if str(project_directory) not in sys.path:
     sys.path.append(str(project_directory))
-    
-    
-
-def get_multitask_optimizers():
-    pass
-
-
 #%%
+from libauc.losses import AUCMLoss
+from torch.nn import BCELoss, MSELoss
 
+def get_loss(loss_name):
+    lower_name = loss_name.lower()
+    return {
+        'bceloss':BCELoss(),
+        'mseloss':MSELoss(),
+        'aucmloss':AUCMLoss(),
+    }[lower_name]
