@@ -70,6 +70,8 @@ parameters:
 
 
   # 7. 训练过程有关参数
+  just_test_can_run: 
+    value: false 
   # 训练
   device_num: 
     value: 1
