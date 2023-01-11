@@ -39,6 +39,8 @@ balancer_name: MetaBalance
 
 
 # 7. 训练过程有关参数
+just_test_can_run: true 
+
 # 训练
 device_num: 3
 save_dir: 'runs/NL_basic/test'

@@ -40,7 +40,7 @@ balancer_name: MetaBalance
 
 
 # 7. 训练过程有关参数
-just_test_can_run: false 
+just_test_can_run: true 
 
 # 训练
 device_num: 0
@@ -48,7 +48,7 @@ save_dir: 'runs/NL_basic'
 save_epoch: 4
 
 # 经典参数
-max_epochs: 50
+max_epochs: 1
 batch_size: 2048
 
 # early stop
