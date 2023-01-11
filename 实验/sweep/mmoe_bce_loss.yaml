@@ -1,0 +1,85 @@
+method: bayes
+metric:
+  goal: maximize
+  name: avg_auc
+parameters:
+  balancer_name:
+    distribution: categorical
+    values:
+      - MetaBalance
+  batch_size:
+    distribution: int_uniform
+    max: 8156
+    min: 387
+  categorical_loss:
+    distribution: categorical
+    values:
+      - BCELoss
+  cumulative_delta:
+    distribution: categorical
+    values:
+      - "true"
+      - "false"
+  dataset_name:
+    distribution: categorical
+    values:
+      - AliExpress_NL
+  dataset_path:
+    distribution: categorical
+    values:
+      - ./data/
+  device_num:
+    value: 3
+  do_balance:
+    distribution: categorical
+    values:
+      - "false"
+  embed_dim:
+    distribution: int_uniform
+    max: 448
+    min: 34
+  expert_num:
+    distribution: int_uniform
+    max: 26
+    min: 2
+  lr:
+    distribution: uniform
+    max: 0.0317639710501233
+    min: 5.258372097618132e-05
+  max_epochs:
+    distribution: int_uniform
+    max: 300
+    min: 75
+  min_delta:
+    value: 0
+  model_name:
+    distribution: categorical
+    values:
+      - mmoe
+  numeric_loss:
+    distribution: categorical
+    values:
+      - ""
+  optimizer_name:
+    distribution: categorical
+    values:
+      - AdamW
+  patience:
+    distribution: int_uniform
+    max: 100
+    min: 40
+  save_dir:
+    distribution: categorical
+    values:
+      - runs/NL/sweep
+  save_epoch:
+    value: 8
+  weight_decay:
+    distribution: uniform
+    max: 0.01
+    min: 8.07647356890126e-05
+  weights:
+    distribution: categorical
+    values:
+      - ""
+program: sweep.py

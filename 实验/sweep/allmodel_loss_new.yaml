@@ -6,7 +6,7 @@ metric:
   goal: maximize
 early_terminate:
   type: hyperband
-  min_iter: 3
+  min_iter: 40
 parameters: 
   # 1. 数据集有关参数
   dataset_name: 
@@ -90,7 +90,8 @@ parameters:
 
   # early stop
   patience: 
-    values: [2, 10, 30]
+    # values: [2, 10, 30]
+    values: [40]
   min_delta: 
     value: 0
   cumulative_delta: 
