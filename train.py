@@ -39,7 +39,8 @@ init_seeds(3407 + 1 + RANK, deterministic=True)
 from utils.gpu_manager import GPUManager
 #%%
 def select_device(device_num):
-    if 'auto' in device_num:
+    
+    if device_num is str and 'auto' in device_num:
         gm=GPUManager()
         return torch.cuda.device(gm.auto_choice())
     else: 
@@ -54,8 +55,8 @@ def main(params:Munch):
     train_dataset = get_dataset(params.dataset_name, os.path.join(params.dataset_path, params.dataset_name) + '/train.csv')
     test_dataset = get_dataset(params.dataset_name, os.path.join(params.dataset_path, params.dataset_name) + '/test.csv')
 
-    sampler = DualSampler(train_dataset, params.batch_size)
-    train_data_loader = DataLoader(train_dataset, batch_size=params.batch_size, 
+    # sampler = DualSampler(train_dataset, params.batch_size) 
+    train_data_loader = DataLoader(train_dataset, batch_size=params.batch_size, # sampler=sampler, 
                                    num_workers=16, shuffle=True, pin_memory=True)
     test_data_loader = DataLoader(test_dataset, batch_size=params.batch_size, 
                                   num_workers=16, shuffle=False, pin_memory=True) # num_workers是GPU数量的四倍。
