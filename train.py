@@ -133,7 +133,7 @@ def main(params:Munch):
         for i in range(task_num):
             LOGGER.info(f'task {i}, AUC {aucs[i]}, Log-loss {losses[i]}')
             auc_data[f'auc{i}'] = aucs[i]
-            loss_data[f'loss{i}'] = losses[i]
+            loss_data[f'loss{i}'] = losses[i][-1]
             # train_loss_data[f'loss{i}'] = epoch_losses[i] TODO 多任务loss
         wandb.log(auc_data)
         wandb.log(loss_data)
