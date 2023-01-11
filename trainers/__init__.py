@@ -3,10 +3,6 @@ import numpy as np
 import tqdm
 import wandb
 
-
-max_i = 1000000 #正常训练
-# max_i = 100 #debug
-
 def get_trainer(model_name, do_balance, **kargs):
     if model_name == 'metaheac':
         assert not do_balance
@@ -20,7 +16,7 @@ class MultitaskTrainer:
         pass
 
 class DefaultTrainer(MultitaskTrainer):
-    def __init__(self, model, optimizer, data_loader, criterion, device, log_interval=100, **kargs) -> None:
+    def __init__(self, model, optimizer, data_loader, criterion, device, log_interval=100, step_callbacks=None, **kargs) -> None:
         super().__init__()
         self.model = model
         self.optimizer = optimizer
@@ -29,6 +25,7 @@ class DefaultTrainer(MultitaskTrainer):
         self.device = device
         self.log_interval = log_interval
         self.epoch = 0
+        self.step_callbacks = step_callbacks
     
     def train_epoch(self):
         self.model.train()
@@ -52,14 +49,20 @@ class DefaultTrainer(MultitaskTrainer):
                 wandb.log({'step_loss':total_loss / self.log_interval, 'epoch': self.epoch, 'step': i})
                 epoch_losses = loss_list
                 total_loss = 0
-            if i>max_i:
+            stop_iteration = False
+            for callback in self.step_callbacks or []:
+                try:
+                    callback(step=i)
+                except StopIteration:
+                    stop_iteration = True
+            if stop_iteration:
                 break
         self.epoch +=1
         return epoch_losses
 
 
 class MetaTrainer(MultitaskTrainer):
-    def __init__(self, model, optimizer, data_loader, device, log_interval=100, **kargs) -> None:
+    def __init__(self, model, optimizer, data_loader, device, log_interval=100, step_callbacks=None, **kargs) -> None:
         super().__init__()
         self.model = model
         self.optimizer = optimizer
@@ -67,6 +70,8 @@ class MetaTrainer(MultitaskTrainer):
         self.device = device
         self.log_interval = log_interval
         self.epoch = 0
+        self.step_callbacks = step_callbacks
+        
     def train_epoch(self):
         self.model.train()
         total_loss = 0
@@ -95,7 +100,13 @@ class MetaTrainer(MultitaskTrainer):
                 wandb.log({'step_loss':total_loss / self.log_interval, 'epoch': self.epoch, 'step': i})
                 epoch_losses  = total_loss
                 total_loss = 0
-            if i>max_i:
+            stop_iteration = False
+            for callback in self.step_callbacks or []:
+                try:
+                    callback(step=i)
+                except StopIteration:
+                    stop_iteration = True
+            if stop_iteration:
                 break
         self.epoch +=1
         return [epoch_losses]
@@ -103,7 +114,8 @@ class MetaTrainer(MultitaskTrainer):
     
 
 class BalanceTrainer(MultitaskTrainer):
-    def __init__(self, model, optimizer_taskLayer, optimizer_sharedLayer, multitask_balancer, data_loader, criterion, device, log_interval=100, **kargs) -> None:
+    def __init__(self, model, optimizer_taskLayer, optimizer_sharedLayer, multitask_balancer, data_loader, 
+                 criterion, device, log_interval=100, step_callbacks=None, **kargs) -> None:
         super().__init__()
         self.model = model
         self.optimizer_taskLayer = optimizer_taskLayer
@@ -114,6 +126,7 @@ class BalanceTrainer(MultitaskTrainer):
         self.device = device
         self.log_interval = log_interval
         self.epoch = 0
+        self.step_callbacks = step_callbacks
         
     def train_epoch(self):
         self.model.train()
@@ -142,11 +155,17 @@ class BalanceTrainer(MultitaskTrainer):
             self.optimizer_sharedLayer.step()
 
             total_loss += loss.item()
-            if (i + 1) % log_interval == 0:
-                tqdmloader.set_postfix(loss=total_loss / log_interval)
+            if (i + 1) % self.log_interval == 0:
+                tqdmloader.set_postfix(loss=total_loss / self.log_interval)
                 wandb.log({'step_loss':total_loss / self.log_interval, 'epoch': self.epoch, 'step': i})
                 total_loss = 0
-            if i>max_i:
+            stop_iteration = False
+            for callback in self.step_callbacks or []:
+                try:
+                    callback(step=i)
+                except StopIteration:
+                    stop_iteration = True
+            if stop_iteration:
                 break
         self.epoch +=1
         return total_losses

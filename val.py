@@ -4,10 +4,8 @@ import tqdm
 from sklearn.metrics import roc_auc_score
 import numpy as np
 
-max_i = 1000000 # 正常训练
-# max_i = 100 # debug
 
-def test(model, data_loader, task_num, device):
+def test(model, data_loader, task_num, device, step_callbacks=None):
     model.eval()
     labels_dict, predicts_dict, loss_dict = {}, {}, {}
     for i in range(task_num):
@@ -20,7 +18,13 @@ def test(model, data_loader, task_num, device):
                 labels_dict[i].extend(labels[:, i].tolist())
                 predicts_dict[i].extend(y[i].tolist())
                 loss_dict[i].extend(torch.nn.functional.binary_cross_entropy(y[i], labels[:, i].float(), reduction='none').tolist())
-            if j>=max_i:
+            stop_iteration = False
+            for callback in step_callbacks or []:
+                try:
+                    callback(step=j)
+                except StopIteration:
+                    stop_iteration = True
+            if stop_iteration:
                 break
     auc_results, loss_results = list(), list()
     for i in range(task_num):

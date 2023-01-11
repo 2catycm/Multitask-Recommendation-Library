@@ -6,6 +6,7 @@ import tqdm
 from torch.utils.data import DataLoader
 import os
 import numpy as np
+from callbacks.debug_step_callback import JustTestCanRun
 
 from datasets import get_dataset
 from models import get_model
@@ -53,15 +54,15 @@ def main(params:Munch):
     model = get_model(params.model_name, field_dims, numerical_num, task_num, 
                       params.expert_num, params.embed_dim)
     
-    # if 'compile' in dir(torch):
-    #     LOGGER.info(f"{colorstr('Pytorch 2.0')} detected, compiling the model to speed up. ")
-    #     # model = torch.compile(model, mode="max-autotune")
-    #     # model = torch.compile(model, mode="max-autotune", fullgraph=True, backend='Eager')
-    #     model = torch.compile(model, mode="max-autotune", fullgraph=True)
-    #     LOGGER.info(f"{colorstr('Pytorch 2.0')} compilation done. ")
+    if 'compile' in dir(torch):
+        LOGGER.info(f"{colorstr('Pytorch 2.0')} detected, compiling the model to speed up. ")
+        # model = torch.compile(model, mode="max-autotune")
+        # model = torch.compile(model, mode="max-autotune", fullgraph=True, backend='Eager')
+        model = torch.compile(model, mode="max-autotune", fullgraph=True)
+        LOGGER.info(f"{colorstr('Pytorch 2.0')} compilation done. ")
         
     model = model.to(device)
-    torch.nn.Module.device = device
+    # torch.nn.Module.device = device
     print(model)
         
     # TODO weights 迁移 if 
@@ -73,8 +74,15 @@ def main(params:Munch):
     # criterion = criterion.to(device)
     LOGGER.info(f"{colorstr('损失函数')}: 加载完成：{criterion}。 ")
     # LOGGER.info(f"{colorstr('损失函数')}: 加载完成。 ")
+    
+    # 4. callback
+    early_stopper = EarlyStopper(params.patience, params.min_delta, params.cumulative_delta)
+    callbacks = []
+    if params.get("just_test_can_run", False):
+        LOGGER.info(f"{colorstr('软件测试')}: 当前为软件测试模式， 只是验证代码是否能够运行。 ")
+        callbacks.append(JustTestCanRun())
         
-    # 4. 优化器
+    # 5. 优化器
     if params.do_balance:
         # optimizer_sharedLayer = get_optimizer(optimizer_name=params.optimizer_name, model.shared_parameters(), **params)
         # optimizer_taskLayer = get_optimizer(optimizer_name=params.optimizer_name, model.specific_parameters(), **params)
@@ -94,12 +102,11 @@ def main(params:Munch):
                                   criti=criterion, device=device, **params)
         # LOGGER.info(f"{colorstr('优化器')}: 加载完成：{optimizer}。 ")
         LOGGER.info(f"{colorstr('优化器')}: 加载完成。 ")
-        # 5. 获得训练器
+        # 6. 获得训练器
         trainer = get_trainer(params.model_name, model=model, 
                             optimizer=optimizer, data_loader=train_data_loader, 
-                            criterion=criterion, device=device, do_balance=params.do_balance)
-
-    early_stopper = EarlyStopper(params.patience, params.min_delta, params.cumulative_delta)
+                            criterion=criterion, device=device, do_balance=params.do_balance, 
+                            callbacks=callbacks)
     
     # 创建新的实验记录
     save_dir = Path(params.save_dir).resolve().absolute()
@@ -118,7 +125,7 @@ def main(params:Munch):
         epoch_losses = trainer.train_epoch()
         # epoch_losses = list(map(lambda x:x.detach().cpu().numpy(), epoch_losses)) # requires grad要detach
         
-        aucs, losses = test(model, test_data_loader, task_num, device)
+        aucs, losses = test(model, test_data_loader, task_num, device, callbacks=callbacks)
         
         auc_data = {'avg_auc': np.array(aucs).mean(), 'epoch': epoch_i}
         loss_data = {'avg_loss':np.array(losses).mean(), 'epoch': epoch_i}
