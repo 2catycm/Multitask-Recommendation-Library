@@ -30,11 +30,17 @@ WORLD_SIZE = int(os.getenv('WORLD_SIZE', 1))
 # torch_utils.make_exp_reproducible()
 init_seeds(3407 + 1 + RANK, deterministic=True)
 
-
+from utils.gpu_manager import GPUManager
+#%%
+def select_device(device_num):
+    if 'auto' in device_num:
+        gm=GPUManager()
+        return torch.cuda.device(gm.auto_choice())
+    else: 
+        return torch.device(device_num)
 #%%
 def main(params:Munch):
-    # device = torch_utils.select_device(device)
-    device = torch.device(params.device_num)
+    device = select_device(params.device_num)
     LOGGER.info(f"{colorstr('训练设备')}: {device}。")
     # 1. 数据集
     LOGGER.info(f"{colorstr('数据集')}: 开始加载{params.dataset_name}: ")
