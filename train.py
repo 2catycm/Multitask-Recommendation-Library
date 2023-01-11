@@ -145,7 +145,7 @@ def main(params:Munch):
         epoch_losses = trainer.train_epoch()
         # epoch_losses = list(map(lambda x:x.detach().cpu().numpy(), epoch_losses)) # requires grad要detach
         
-        aucs, losses = test(model, test_data_loader, task_num, device, step_callbacks=step_callbacks)
+        aucs, losses = test(model, test_data_loader, task_num, device, epoch=epoch_i, step_callbacks=step_callbacks)
         
         auc_data = {'avg_auc': np.array(aucs).mean(), 'epoch': epoch_i}
         loss_data = {'avg_loss':np.array(losses).mean(), 'epoch': epoch_i}

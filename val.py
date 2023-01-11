@@ -3,9 +3,10 @@ import torch
 import tqdm
 from sklearn.metrics import roc_auc_score
 import numpy as np
+from tensorboardX import SummaryWriter
+tensorboard = SummaryWriter('./tensorboard_log')
 
-
-def test(model, data_loader, task_num, device, step_callbacks=None):
+def test(model, data_loader, task_num, device, epoch=0, step_callbacks=None):
     model.eval()
     labels_dict, predicts_dict, loss_dict = {}, {}, {}
     for i in range(task_num):
@@ -30,5 +31,9 @@ def test(model, data_loader, task_num, device, step_callbacks=None):
     for i in range(task_num):
         auc_results.append(roc_auc_score(labels_dict[i], predicts_dict[i]))
         loss_results.append(np.array(loss_dict[i]))
+        tensorboard.add_pr_curve(f'task{task_num}',
+                        labels=labels_dict[i],
+                        predictions=predicts_dict[i],
+                        global_step=epoch)
     return auc_results, loss_results
 # %%
