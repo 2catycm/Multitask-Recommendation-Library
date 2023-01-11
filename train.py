@@ -83,6 +83,7 @@ def main(params:Munch):
         state_dict=torch.load(weights)
         model.load_state_dict(state_dict)
     # TODO DP或者DDP
+    tensorboard.add_graph(model, input_to_model=torch.zeros((params.batch_size, train_dataset.categorical_num+train_dataset.numerical_num)))
     LOGGER.info(f"{colorstr('模型')}: 加载成功。")
     
     # 3. 损失函数： TODO 根据多任务获得离散型和连续型的损失函数
