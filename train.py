@@ -45,6 +45,7 @@ def select_device(device_num):
     else: 
         return torch.device(device_num)
 #%%
+from libauc.sampler import DualSampler
 def main(params:Munch):
     device = select_device(params.device_num)
     LOGGER.info(f"{colorstr('训练设备')}: {device}。")
@@ -52,6 +53,8 @@ def main(params:Munch):
     LOGGER.info(f"{colorstr('数据集')}: 开始加载{params.dataset_name}: ")
     train_dataset = get_dataset(params.dataset_name, os.path.join(params.dataset_path, params.dataset_name) + '/train.csv')
     test_dataset = get_dataset(params.dataset_name, os.path.join(params.dataset_path, params.dataset_name) + '/test.csv')
+
+    sampler = DualSampler(train_dataset, params.batch_size)
     train_data_loader = DataLoader(train_dataset, batch_size=params.batch_size, 
                                    num_workers=16, shuffle=True, pin_memory=True)
     test_data_loader = DataLoader(test_dataset, batch_size=params.batch_size, 
@@ -143,6 +146,8 @@ def main(params:Munch):
     LOGGER.info(f"{colorstr('训练')}: 终于可以开始啦! ")    
     for epoch_i in range(params.max_epochs):
         epoch_losses = trainer.train_epoch()
+        if params.categorical_loss.lower()=='AUCMLoss'.lower():
+            optimizer.update_regularizer()
         # epoch_losses = list(map(lambda x:x.detach().cpu().numpy(), epoch_losses)) # requires grad要detach
         
         aucs, losses = test(model, test_data_loader, task_num, device, epoch=epoch_i, step_callbacks=step_callbacks)
