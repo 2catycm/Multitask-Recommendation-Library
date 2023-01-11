@@ -8,6 +8,8 @@ import os
 import numpy as np
 from callbacks.debug_step_callback import JustTestCanRun
 
+
+
 from datasets import get_dataset
 from models import get_model
 from losses import get_loss
@@ -23,6 +25,10 @@ from utils.general import LOGGER, colorstr, yaml_load, check_git_info, init_seed
 from val import *
 
 from munch import DefaultMunch, Munch
+
+from tensorboardX import SummaryWriter
+tensorboard = SummaryWriter('./tensorboard_log')
+
 #%%
 LOCAL_RANK = int(os.getenv('LOCAL_RANK', -1))  # https://pytorch.org/docs/stable/elastic/run.html
 RANK = int(os.getenv('RANK', -1))
@@ -123,6 +129,9 @@ def main(params:Munch):
             exp_save_dir.mkdir(parents=True)
             save_dir = exp_save_dir
             LOGGER.info(f"{colorstr('实验管理')}: 数据集{params.dataset_name}新增实验{i}。")    
+            from clearml import Task
+            clearml_task = Task.init(project_name='test_multitask' if params.just_test_can_run else params.dataset_name, 
+                                     task_name=f'{params.model_name}+{params.categorical_loss}+{i}')
             break
         i+=1
     
@@ -135,11 +144,15 @@ def main(params:Munch):
         
         auc_data = {'avg_auc': np.array(aucs).mean(), 'epoch': epoch_i}
         loss_data = {'avg_loss':np.array(losses).mean(), 'epoch': epoch_i}
+        tensorboard.add_scalar(f'avg_auc', np.array(aucs).mean(), epoch_i)
+        tensorboard.add_scalar(f'avg_val_loss', np.array(losses).mean(), epoch_i)
         # train_loss_data = {'train_loss':np.array(epoch_losses).mean(), 'epoch': epoch_i}
         for i in range(task_num):
             LOGGER.info(f'task {i}, AUC {aucs[i]}, Log-loss {losses[i]}')
             auc_data[f'auc{i}'] = aucs[i]
             loss_data[f'loss{i}'] = losses[i][-1]
+            tensorboard.add_scalar(f'auc{i}', aucs[i], epoch_i)
+            tensorboard.add_scalar(f'val_loss{i}', losses[i][-1], epoch_i)
             # train_loss_data[f'loss{i}'] = epoch_losses[i] TODO 多任务loss
         wandb.log(auc_data)
         wandb.log(loss_data)

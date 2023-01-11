@@ -2,6 +2,8 @@ from abc import abstractmethod
 import numpy as np
 import tqdm
 import wandb
+from tensorboardX import SummaryWriter
+tensorboard = SummaryWriter('./tensorboard_log')
 
 def get_trainer(model_name, do_balance, **kargs):
     if model_name == 'metaheac':
@@ -47,6 +49,7 @@ class DefaultTrainer(MultitaskTrainer):
             if (i + 1) % self.log_interval == 0:
                 loader.set_postfix(loss=total_loss / self.log_interval)
                 wandb.log({'step_loss':total_loss / self.log_interval, 'epoch': self.epoch, 'step': i})
+                tensorboard.add_scalar('step_loss', total_loss / self.log_interval, self.epoch*len(loader)+i)
                 epoch_losses = loss_list
                 total_loss = 0
             stop_iteration = False
@@ -98,6 +101,7 @@ class MetaTrainer(MultitaskTrainer):
             if (i + 1) % self.log_interval == 0:
                 loader.set_postfix(loss=total_loss / self.log_interval)
                 wandb.log({'step_loss':total_loss / self.log_interval, 'epoch': self.epoch, 'step': i})
+                tensorboard.add_scalar('step_loss', total_loss / self.log_interval, self.epoch*len(loader)+i)
                 epoch_losses  = total_loss
                 total_loss = 0
             stop_iteration = False
@@ -158,6 +162,7 @@ class BalanceTrainer(MultitaskTrainer):
             if (i + 1) % self.log_interval == 0:
                 tqdmloader.set_postfix(loss=total_loss / self.log_interval)
                 wandb.log({'step_loss':total_loss / self.log_interval, 'epoch': self.epoch, 'step': i})
+                tensorboard.add_scalar('step_loss', total_loss / self.log_interval, self.epoch*len(tqdmloader)+i)
                 total_loss = 0
             stop_iteration = False
             for callback in self.step_callbacks or []:

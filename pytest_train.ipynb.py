@@ -1,4 +1,7 @@
 #%%
+from train import select_device
+select_device('auto')
+#%%
 # from models import get_model
 # model = get_model('ple', [0,1,2], 3, 2, 8, 3)
 # %%
