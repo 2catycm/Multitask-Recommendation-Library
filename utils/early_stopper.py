@@ -19,6 +19,7 @@ class EarlyStopper(object):
             self.patience_counter += 1
             if self.patience_counter >= self.patience:
                 return False
+            return True
         else:
             self.best_score = score
             self.best_epoch = epoch_i
