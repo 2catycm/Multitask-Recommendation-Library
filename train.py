@@ -77,7 +77,11 @@ def main(params:Munch):
     # torch.nn.Module.device = device
     print(model)
         
-    # TODO weights 迁移 if 
+    # weights 迁移 if 
+    weights = params.get("weights", None)
+    if weights:
+        state_dict=torch.load(weights)
+        model.load_state_dict(state_dict)
     # TODO DP或者DDP
     LOGGER.info(f"{colorstr('模型')}: 加载成功。")
     
