@@ -1,6 +1,10 @@
 #%%
 from train import select_device
-select_device('auto')
+d = select_device('auto')
+# select_device(1)
+import torch
+a = torch.zeros((4, 2))
+a.to(d)
 #%%
 # from models import get_model
 # model = get_model('ple', [0,1,2], 3, 2, 8, 3)

@@ -40,9 +40,9 @@ from utils.gpu_manager import GPUManager
 #%%
 def select_device(device_num):
     
-    if device_num is str and 'auto' in device_num:
+    if  device_num=='auto':
         gm=GPUManager()
-        return torch.cuda.device(gm.auto_choice())
+        return torch.device(gm.auto_choice())
     else: 
         return torch.device(device_num)
 #%%
@@ -76,19 +76,22 @@ def main(params:Munch):
     #     # model = torch.compile(model, mode="max-autotune", fullgraph=True, backend='Eager')
     #     model = torch.compile(model, mode="max-autotune", fullgraph=True)
     #     LOGGER.info(f"{colorstr('Pytorch 2.0')} compilation done. ")
-        
+    dummy_input = (torch.zeros((params.batch_size, train_dataset.categorical_num)).to(torch.int64), 
+                   torch.zeros((params.batch_size, train_dataset.numerical_num)).to(torch.float32))
+    tensorboard.add_graph(model, input_to_model=dummy_input)     
     model = model.to(device)
     # torch.nn.Module.device = device
     print(model)
+    LOGGER.info(f"{colorstr('模型')}: 加载成功。")
         
     # weights 迁移 if 
-    weights = params.get("weights", None)
-    if weights:
+    weights = Path(params.weights or '').resolve()
+    if weights.is_file() and weights.exists():
         state_dict=torch.load(weights)
         model.load_state_dict(state_dict)
+        LOGGER.info(f"{colorstr('模型')}: 迁移参数完成。")
     # TODO DP或者DDP
-    tensorboard.add_graph(model, input_to_model=torch.zeros((params.batch_size, train_dataset.categorical_num+train_dataset.numerical_num)))
-    LOGGER.info(f"{colorstr('模型')}: 加载成功。")
+    
     
     # 3. 损失函数： TODO 根据多任务获得离散型和连续型的损失函数
     criterion = get_loss(params.categorical_loss, device=device)

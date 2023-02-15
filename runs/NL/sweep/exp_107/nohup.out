@@ -1,0 +1,176 @@
+wandb: Starting wandb agent 🕵️
+2023-01-12 06:08:33,777 - wandb.wandb_agent - INFO - Running runs: []
+2023-01-12 06:08:34,194 - wandb.wandb_agent - INFO - Agent received command: run
+2023-01-12 06:08:34,194 - wandb.wandb_agent - INFO - Agent starting run with config:
+	balancer_name: MetaBalance
+	batch_size: 3501
+	categorical_loss: AUCMLoss
+	cumulative_delta: False
+	dataset_name: AliExpress_NL
+	dataset_path: ./data/
+	device_num: auto
+	do_balance: False
+	embed_dim: 115
+	expert_num: 12
+	just_test_can_run: False
+	lr: 2.9235276611268236e-06
+	max_epochs: 150
+	min_delta: 0
+	model_name: aitm
+	numeric_loss: 
+	optimizer_name: PESG
+	patience: 40
+	save_dir: runs/NL/sweep
+	save_epoch: 2
+	weight_decay: 0.001475531182154342
+	weights: 
+2023-01-12 06:08:34,198 - wandb.wandb_agent - INFO - About to run command: /usr/bin/env python sweep.py --balancer_name=MetaBalance --batch_size=3501 --categorical_loss=AUCMLoss --cumulative_delta=False --dataset_name=AliExpress_NL --dataset_path=./data/ --device_num=auto --do_balance=False --embed_dim=115 --expert_num=12 --just_test_can_run=False --lr=2.9235276611268236e-06 --max_epochs=150 --min_delta=0 --model_name=aitm --numeric_loss= --optimizer_name=PESG --patience=40 --save_dir=runs/NL/sweep --save_epoch=2 --weight_decay=0.001475531182154342 --weights=
+python: can't open file '/home/yecm/public/Multitask-Recommendation-Library/runs/NL/sweep/exp_107/sweep.py': [Errno 2] No such file or directory
+2023-01-12 06:08:39,209 - wandb.wandb_agent - INFO - Running runs: ['wzgzk8mm']
+2023-01-12 06:08:39,210 - wandb.wandb_agent - INFO - Cleaning up finished run: wzgzk8mm
+2023-01-12 06:08:39,903 - wandb.wandb_agent - INFO - Agent received command: run
+2023-01-12 06:08:39,904 - wandb.wandb_agent - INFO - Agent starting run with config:
+	balancer_name: MetaBalance
+	batch_size: 2553
+	categorical_loss: AUCMLoss
+	cumulative_delta: False
+	dataset_name: AliExpress_NL
+	dataset_path: ./data/
+	device_num: auto
+	do_balance: False
+	embed_dim: 115
+	expert_num: 12
+	just_test_can_run: False
+	lr: 1.2625467213430396e-05
+	max_epochs: 150
+	min_delta: 0
+	model_name: aitm
+	numeric_loss: 
+	optimizer_name: PESG
+	patience: 40
+	save_dir: runs/NL/sweep
+	save_epoch: 2
+	weight_decay: 0.001581288744549695
+	weights: 
+2023-01-12 06:08:39,908 - wandb.wandb_agent - INFO - About to run command: /usr/bin/env python sweep.py --balancer_name=MetaBalance --batch_size=2553 --categorical_loss=AUCMLoss --cumulative_delta=False --dataset_name=AliExpress_NL --dataset_path=./data/ --device_num=auto --do_balance=False --embed_dim=115 --expert_num=12 --just_test_can_run=False --lr=1.2625467213430396e-05 --max_epochs=150 --min_delta=0 --model_name=aitm --numeric_loss= --optimizer_name=PESG --patience=40 --save_dir=runs/NL/sweep --save_epoch=2 --weight_decay=0.001581288744549695 --weights=
+python: can't open file '/home/yecm/public/Multitask-Recommendation-Library/runs/NL/sweep/exp_107/sweep.py': [Errno 2] No such file or directory
+2023-01-12 06:08:44,924 - wandb.wandb_agent - INFO - Running runs: ['n0a048xd']
+2023-01-12 06:08:44,926 - wandb.wandb_agent - INFO - Cleaning up finished run: n0a048xd
+2023-01-12 06:08:45,392 - wandb.wandb_agent - INFO - Agent received command: run
+2023-01-12 06:08:45,393 - wandb.wandb_agent - INFO - Agent starting run with config:
+	balancer_name: MetaBalance
+	batch_size: 3946
+	categorical_loss: AUCMLoss
+	cumulative_delta: False
+	dataset_name: AliExpress_NL
+	dataset_path: ./data/
+	device_num: auto
+	do_balance: False
+	embed_dim: 115
+	expert_num: 12
+	just_test_can_run: False
+	lr: 7.978639814324771e-07
+	max_epochs: 150
+	min_delta: 0
+	model_name: aitm
+	numeric_loss: 
+	optimizer_name: PESG
+	patience: 40
+	save_dir: runs/NL/sweep
+	save_epoch: 2
+	weight_decay: 0.004717021934937145
+	weights: 
+2023-01-12 06:08:45,397 - wandb.wandb_agent - INFO - About to run command: /usr/bin/env python sweep.py --balancer_name=MetaBalance --batch_size=3946 --categorical_loss=AUCMLoss --cumulative_delta=False --dataset_name=AliExpress_NL --dataset_path=./data/ --device_num=auto --do_balance=False --embed_dim=115 --expert_num=12 --just_test_can_run=False --lr=7.978639814324771e-07 --max_epochs=150 --min_delta=0 --model_name=aitm --numeric_loss= --optimizer_name=PESG --patience=40 --save_dir=runs/NL/sweep --save_epoch=2 --weight_decay=0.004717021934937145 --weights=
+python: can't open file '/home/yecm/public/Multitask-Recommendation-Library/runs/NL/sweep/exp_107/sweep.py': [Errno 2] No such file or directory
+2023-01-12 06:08:50,411 - wandb.wandb_agent - INFO - Running runs: ['dua7mra7']
+2023-01-12 06:08:50,412 - wandb.wandb_agent - ERROR - Detected 3 failed runs in the first 60 seconds, shutting down.
+2023-01-12 06:08:50,412 - wandb.wandb_agent - INFO - To disable this check set WANDB_AGENT_DISABLE_FLAPPING=true
+wandb: Terminating and syncing runs. Press ctrl-c to kill.
+wandb: Starting wandb agent 🕵️
+2023-01-12 06:09:39,775 - wandb.wandb_agent - INFO - Running runs: []
+2023-01-12 06:09:40,500 - wandb.wandb_agent - INFO - Agent received command: run
+2023-01-12 06:09:40,500 - wandb.wandb_agent - INFO - Agent starting run with config:
+	balancer_name: MetaBalance
+	batch_size: 3839
+	categorical_loss: AUCMLoss
+	cumulative_delta: False
+	dataset_name: AliExpress_NL
+	dataset_path: ./data/
+	device_num: auto
+	do_balance: False
+	embed_dim: 351
+	expert_num: 11
+	just_test_can_run: False
+	lr: 0.0002475757607818143
+	max_epochs: 150
+	min_delta: 0
+	model_name: aitm
+	numeric_loss: 
+	optimizer_name: PESG
+	patience: 40
+	save_dir: runs/NL/sweep
+	save_epoch: 2
+	weight_decay: 0.00010128842181341031
+	weights: runs/NL/sweep/exp_107/aitm_32.pt
+2023-01-12 06:09:40,506 - wandb.wandb_agent - INFO - About to run command: /usr/bin/env python sweep.py --balancer_name=MetaBalance --batch_size=3839 --categorical_loss=AUCMLoss --cumulative_delta=False --dataset_name=AliExpress_NL --dataset_path=./data/ --device_num=auto --do_balance=False --embed_dim=351 --expert_num=11 --just_test_can_run=False --lr=0.0002475757607818143 --max_epochs=150 --min_delta=0 --model_name=aitm --numeric_loss= --optimizer_name=PESG --patience=40 --save_dir=runs/NL/sweep --save_epoch=2 --weight_decay=0.00010128842181341031 --weights=runs/NL/sweep/exp_107/aitm_32.pt
+python: can't open file '/home/yecm/public/Multitask-Recommendation-Library/runs/NL/sweep/exp_107/sweep.py': [Errno 2] No such file or directory
+2023-01-12 06:09:45,517 - wandb.wandb_agent - INFO - Running runs: ['xuaatd54']
+2023-01-12 06:09:45,518 - wandb.wandb_agent - INFO - Cleaning up finished run: xuaatd54
+2023-01-12 06:09:46,231 - wandb.wandb_agent - INFO - Agent received command: run
+2023-01-12 06:09:46,232 - wandb.wandb_agent - INFO - Agent starting run with config:
+	balancer_name: MetaBalance
+	batch_size: 2248
+	categorical_loss: AUCMLoss
+	cumulative_delta: False
+	dataset_name: AliExpress_NL
+	dataset_path: ./data/
+	device_num: auto
+	do_balance: False
+	embed_dim: 351
+	expert_num: 11
+	just_test_can_run: False
+	lr: 1.8736887466737768e-06
+	max_epochs: 150
+	min_delta: 0
+	model_name: aitm
+	numeric_loss: 
+	optimizer_name: PESG
+	patience: 40
+	save_dir: runs/NL/sweep
+	save_epoch: 2
+	weight_decay: 0.009817702979133156
+	weights: 
+2023-01-12 06:09:46,235 - wandb.wandb_agent - INFO - About to run command: /usr/bin/env python sweep.py --balancer_name=MetaBalance --batch_size=2248 --categorical_loss=AUCMLoss --cumulative_delta=False --dataset_name=AliExpress_NL --dataset_path=./data/ --device_num=auto --do_balance=False --embed_dim=351 --expert_num=11 --just_test_can_run=False --lr=1.8736887466737768e-06 --max_epochs=150 --min_delta=0 --model_name=aitm --numeric_loss= --optimizer_name=PESG --patience=40 --save_dir=runs/NL/sweep --save_epoch=2 --weight_decay=0.009817702979133156 --weights=
+python: can't open file '/home/yecm/public/Multitask-Recommendation-Library/runs/NL/sweep/exp_107/sweep.py': [Errno 2] No such file or directory
+2023-01-12 06:09:51,245 - wandb.wandb_agent - INFO - Running runs: ['xxmza08d']
+2023-01-12 06:09:51,247 - wandb.wandb_agent - INFO - Cleaning up finished run: xxmza08d
+2023-01-12 06:09:51,739 - wandb.wandb_agent - INFO - Agent received command: run
+2023-01-12 06:09:51,739 - wandb.wandb_agent - INFO - Agent starting run with config:
+	balancer_name: MetaBalance
+	batch_size: 2977
+	categorical_loss: AUCMLoss
+	cumulative_delta: False
+	dataset_name: AliExpress_NL
+	dataset_path: ./data/
+	device_num: auto
+	do_balance: False
+	embed_dim: 351
+	expert_num: 11
+	just_test_can_run: False
+	lr: 2.747068806174057e-06
+	max_epochs: 150
+	min_delta: 0
+	model_name: aitm
+	numeric_loss: 
+	optimizer_name: PESG
+	patience: 40
+	save_dir: runs/NL/sweep
+	save_epoch: 2
+	weight_decay: 0.0016808880057578518
+	weights: 
+2023-01-12 06:09:51,743 - wandb.wandb_agent - INFO - About to run command: /usr/bin/env python sweep.py --balancer_name=MetaBalance --batch_size=2977 --categorical_loss=AUCMLoss --cumulative_delta=False --dataset_name=AliExpress_NL --dataset_path=./data/ --device_num=auto --do_balance=False --embed_dim=351 --expert_num=11 --just_test_can_run=False --lr=2.747068806174057e-06 --max_epochs=150 --min_delta=0 --model_name=aitm --numeric_loss= --optimizer_name=PESG --patience=40 --save_dir=runs/NL/sweep --save_epoch=2 --weight_decay=0.0016808880057578518 --weights=
+python: can't open file '/home/yecm/public/Multitask-Recommendation-Library/runs/NL/sweep/exp_107/sweep.py': [Errno 2] No such file or directory
+2023-01-12 06:09:56,759 - wandb.wandb_agent - INFO - Running runs: ['53xijf0q']
+2023-01-12 06:09:56,760 - wandb.wandb_agent - ERROR - Detected 3 failed runs in the first 60 seconds, shutting down.
+2023-01-12 06:09:56,760 - wandb.wandb_agent - INFO - To disable this check set WANDB_AGENT_DISABLE_FLAPPING=true
+wandb: Terminating and syncing runs. Press ctrl-c to kill.

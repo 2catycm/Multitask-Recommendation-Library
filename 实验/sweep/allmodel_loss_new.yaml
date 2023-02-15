@@ -37,13 +37,6 @@ parameters:
   numeric_loss: 
     value: ''
 
-  # 3.1离散型分类任务
-  # 3.1.1普通分布
-  # criterion = torch.nn.BCELoss()
-  # 3.1.2类别不平衡
-  # 3.2连续型回归任务
-  # criterion = torch.nn.MSELoss()
-
   # 4. 优化器
   # 4.1 基础优化器
   optimizer_name: 

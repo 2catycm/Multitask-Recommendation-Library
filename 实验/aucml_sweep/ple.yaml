@@ -1,0 +1,102 @@
+# sweep
+program: sweep.py
+method: bayes
+metric: 
+  name: avg_auc
+  goal: maximize
+# early_terminate:
+#   type: hyperband
+#   min_iter: 40
+parameters: 
+  # 1. 数据集有关参数
+  dataset_name: 
+    value: 'AliExpress_NL' # choices=['AliExpress_NL', 'AliExpress_ES', 'AliExpress_FR', 'AliExpress_US']
+  dataset_path: 
+    value: './data/'
+
+  # 2. 模型选择。包括模型内部的参数选择。
+  model_name: 
+    value: 'aitm' # choices=['singletask', 'sharedbottom', 'omoe', 'mmoe', 'ple', 'aitm', 'metaheac']
+  expert_num: 
+    value: 12
+    # distribution: int_uniform
+    # min: 2
+    # max: 32
+
+  embed_dim: 
+    value: 115
+    # distribution: int_uniform
+    # min: 34
+    # max: 448
+  weights: 
+    value: 'runs/NL/sweep/exp_105/ple_8.pt'
+
+  # 3. 基础loss的选择
+
+  categorical_loss: 
+    value: AUCMLoss
+  # categorical_loss: BCELoss
+  numeric_loss: 
+    value: ''
+
+  # 3.1离散型分类任务
+  # 3.1.1普通分布
+  # criterion = torch.nn.BCELoss()
+  # 3.1.2类别不平衡
+  # 3.2连续型回归任务
+  # criterion = torch.nn.MSELoss()
+
+  # 4. 优化器
+  # 4.1 基础优化器
+  optimizer_name: 
+    value: PESG
+  # optimizer_name: Adam
+  lr: 
+    distribution: log_uniform_values
+    max: 3.0e-4
+    min: 7.0e-7
+  weight_decay: 
+    distribution: log_uniform_values
+    max: 0.01
+    min: 8.0e-05
+
+  # 5. 多任务平衡器选择
+  do_balance: 
+    value: false
+  balancer_name: 
+    value: MetaBalance
+
+  # 6. 训练器的选择
+  # trainer: default  # balance_train, meta_train
+  # 不允许选择，需要自动推导。
+
+
+  # 7. 训练过程有关参数
+  just_test_can_run: 
+    value: false 
+
+  # 训练
+  device_num: 
+    value: auto
+  save_dir: 
+    value: 'runs/NL/sweep'
+  save_epoch: 
+    value: 2
+
+  # 经典参数
+  max_epochs: 
+    value: 150
+  batch_size:
+    distribution: int_uniform
+    min: 512 
+    max: 4096
+
+  # early stop
+  patience: 
+    # values: [2, 10, 30]
+    value: 40
+  min_delta: 
+    value: 0
+  cumulative_delta: 
+    value: false
+

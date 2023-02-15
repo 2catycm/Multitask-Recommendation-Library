@@ -1,5 +1,6 @@
 ### wandb
 wandb/
+tensorboard_log/
 ### 
 
 *.pt
