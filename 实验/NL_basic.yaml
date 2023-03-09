@@ -4,7 +4,7 @@ dataset_path: './data/'
 
 # 2. 模型选择。包括模型内部的参数选择。
 # model_name: 'ple' # choices=['singletask', 'sharedbottom', 'omoe', 'mmoe', 'ple', 'aitm', 'metaheac']
-model_name: 'metaheac' # choices=['singletask', 'sharedbottom', 'omoe', 'mmoe', 'ple', 'aitm', 'metaheac']
+model_name: 'mmoe' # choices=['singletask', 'sharedbottom', 'omoe', 'mmoe', 'ple', 'aitm', 'metaheac']
 expert_num: 8
 embed_dim: 128
 weights: 
@@ -31,7 +31,8 @@ weight_decay: 1.0e-6
 
 
 # 5. 多任务平衡器选择
-do_balance: false
+# do_balance: false
+do_balance: true # todo: set false
 balancer_name: MetaBalance
 
 # 6. 训练器的选择

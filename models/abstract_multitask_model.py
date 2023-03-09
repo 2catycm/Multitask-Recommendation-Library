@@ -6,7 +6,7 @@ class MultitaskModel(torch.nn.Module):
         result = []
         for i in selected:
             result += list(i.parameters())
-        return result
+        return iter(result)
     @abstractmethod
     def specific_parameters(self):
         pass
