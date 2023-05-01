@@ -1,8 +1,9 @@
 import torch
+from models.abstract_multitask_model import MultitaskModel
 from models.layers import EmbeddingLayer, MultiLayerPerceptron
 
 
-class SharedBottomModel(torch.nn.Module):
+class SharedBottomModel(MultitaskModel):
     """
     A pytorch implementation of Shared-Bottom Model.
     """
@@ -30,3 +31,9 @@ class SharedBottomModel(torch.nn.Module):
 
         results = [torch.sigmoid(self.tower[i](fea).squeeze(1)) for i in range(self.task_num)]
         return results
+
+    def specific_parameters(self):
+        return self.parameters_selected([self.tower])
+
+    def shared_parameters(self):
+        return self.parameters_selected([self.bottom, self.embedding, self.numerical_layer])

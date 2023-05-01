@@ -40,6 +40,6 @@ class MMoEModel(MultitaskModel):
         return results
 
     def specific_parameters(self):
-        return self.parameters_selected([self.expert, self.tower, self.gate])
+        return self.parameters_selected([self.tower, self.gate])
     def shared_parameters(self):
-        return self.parameters_selected([self.embedding, self.numerical_layer])
+        return self.parameters_selected([self.expert, self.embedding, self.numerical_layer])
