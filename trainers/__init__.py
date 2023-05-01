@@ -48,7 +48,7 @@ class DefaultTrainer(MultitaskTrainer):
             total_loss += loss.item()
             if (i + 1) % self.log_interval == 0:
                 loader.set_postfix(loss=total_loss / self.log_interval)
-                wandb.log({'step_loss':total_loss / self.log_interval, 'epoch': self.epoch, 'step': i})
+                # wandb.log({'step_loss':total_loss / self.log_interval, 'epoch': self.epoch, 'step': i})
                 tensorboard.add_scalar('step_loss', total_loss / self.log_interval, self.epoch*len(loader)+i)
                 epoch_losses = loss_list
                 total_loss = 0
@@ -100,7 +100,8 @@ class MetaTrainer(MultitaskTrainer):
                 list_sup_categorical, list_sup_numerical, list_sup_y, list_qry_categorical, list_qry_numerical, list_qry_y = list(), list(), list(), list(), list(), list()
             if (i + 1) % self.log_interval == 0:
                 loader.set_postfix(loss=total_loss / self.log_interval)
-                wandb.log({'step_loss':total_loss / self.log_interval, 'epoch': self.epoch, 'step': i})
+                # wandb.log({'step_loss':total_loss / self.log_interval, 'epoch': self.epoch, 'step': i})
+                # wandb.log({'step_loss': total_loss / self.log_interval, 'step': i})
                 tensorboard.add_scalar('step_loss', total_loss / self.log_interval, self.epoch*len(loader)+i)
                 epoch_losses  = total_loss
                 total_loss = 0
@@ -161,7 +162,7 @@ class BalanceTrainer(MultitaskTrainer):
             total_loss += loss.item()
             if (i + 1) % self.log_interval == 0:
                 tqdmloader.set_postfix(loss=total_loss / self.log_interval)
-                wandb.log({'step_loss':total_loss / self.log_interval, 'epoch': self.epoch, 'step': i})
+                # wandb.log({'step_loss':total_loss / self.log_interval, 'epoch': self.epoch, 'step': i})
                 tensorboard.add_scalar('step_loss', total_loss / self.log_interval, self.epoch*len(tqdmloader)+i)
                 total_loss = 0
             stop_iteration = False
