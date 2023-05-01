@@ -16,6 +16,7 @@ class MultitaskTrainer:
     @abstractmethod
     def train_epoch(self):
         pass
+    
 
 class DefaultTrainer(MultitaskTrainer):
     def __init__(self, model, optimizer, data_loader, criterion, device, log_interval=100, step_callbacks=None, **kargs) -> None:
@@ -44,6 +45,7 @@ class DefaultTrainer(MultitaskTrainer):
             loss /= len(loss_list)
             self.model.zero_grad()
             loss.backward()
+
             self.optimizer.step()
             total_loss += loss.item()
             if (i + 1) % self.log_interval == 0:
@@ -137,7 +139,7 @@ class BalanceTrainer(MultitaskTrainer):
         self.model.train()
         total_loss = 0
         total_losses = np.array([0, 0])
-        tqdmloader = tqdm.tqdm(self.data_loader, smoothing=0, mininterval=1.0)
+        tqdmloader = tqdm.tqdm(self.data_loader, smoothing=0, mininterval=1.0, desc=f'Training Epoch {self.epoch} by BalanceTrainer')
         for i, (categorical_fields, numerical_fields, labels) in enumerate(tqdmloader):
             # 从数据集中读取数据，计算输出和loss。
             categorical_fields, numerical_fields, labels = categorical_fields.to(
@@ -154,7 +156,9 @@ class BalanceTrainer(MultitaskTrainer):
             # 似乎必须这样写
             # 这是满足 规律的吗？  可能变大了一倍，但是不影响结果。
             self.model.zero_grad()  # 清空上一轮训练的梯度。
+            
             loss.backward(retain_graph=True)
+            
             self.multitask_balancer.step(loss_list)        
             self.optimizer_taskLayer.step()
             self.optimizer_sharedLayer.step()

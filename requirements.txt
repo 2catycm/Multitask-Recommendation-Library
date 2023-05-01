@@ -1,1 +1,5 @@
 libauc
+PyYAML 
+tensorboardX
+tensorboard
+tensorflow

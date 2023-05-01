@@ -10,7 +10,7 @@ if str(project_directory) not in sys.path:
 #%%    
 from multi_balancer.metabalance import *
 from multi_balancer.corrbalance import *
-def get_multi_balancer(balancer_name, shared_params, corr_factor=None, relax_factor=0.7, beta=0.9):
+def get_multi_balancer(balancer_name, shared_params, corr_factor=None, relax_factor=0.7, beta=0.9)->Optimizer:
     lower_name = balancer_name.lower()
     if corr_factor == None:
         corr_factor = []

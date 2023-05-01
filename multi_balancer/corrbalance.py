@@ -57,7 +57,7 @@ class CorrBalance(Optimizer):
           for p in group['params']:
 
             if p.grad is None:
-              print("breaking")
+              print("Gradient is None, break. ")
               break
 
             if p.grad.is_sparse:
@@ -68,8 +68,8 @@ class CorrBalance(Optimizer):
             # State initialization
             if len(state) == 0:
               for j, _ in enumerate(loss_array):
-                if j == 0: p.norms = [torch.zeros(1).cuda()]
-                else: p.norms.append(torch.zeros(1).cuda())
+                if j == 0: p.norms = [torch.zeros(1).to(p.device)]
+                else: p.norms.append(torch.zeros(1).to(p.device))
 
             # calculate moving averages of gradient magnitudes
             beta = group['beta']

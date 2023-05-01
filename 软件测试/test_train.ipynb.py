@@ -3,7 +3,6 @@
 import argparse
 import wandb
 from libauc.sampler import DualSampler
-from models.abstract_multitask_model import MultitaskWrapper
 from utils.gpu_manager import GPUManager
 from pathlib import Path
 import torch
@@ -33,29 +32,20 @@ from munch import DefaultMunch, Munch
 from tensorboardX import SummaryWriter
 tensorboard = SummaryWriter('./tensorboard_log')
 
-# from accelerate import Accelerator
-# accelerator = Accelerator()
-from torchsummary import summary
 # %%
-
-
-def set_seeds(params):
-    if params.get('deterministic', False):
-        LOGGER.info(f"实验模式为{colorstr('确定性实验')}，将会设置固定随机种子。")
-        torch_utils.make_exp_reproducible(params.seed or 3407)
-    else:
-        LOGGER.info(f"实验模式为{colorstr('统计性实验')}，随机种子不做设置。")
-    # https://pytorch.org/docs/stable/elastic/run.html
-    # LOCAL_RANK = int(os.getenv('LOCAL_RANK', -1))
-    # RANK = int(os.getenv('RANK', -1))
-    # WORLD_SIZE = int(os.getenv('WORLD_SIZE', 1))
+# https://pytorch.org/docs/stable/elastic/run.html
+LOCAL_RANK = int(os.getenv('LOCAL_RANK', -1))
+RANK = int(os.getenv('RANK', -1))
+WORLD_SIZE = int(os.getenv('WORLD_SIZE', 1))
+# torch_utils.make_exp_reproducible()
+init_seeds(3407 + 1 + RANK, deterministic=True)
 
 # %%
 
 
 def select_device(device_num):
+
     if device_num == 'auto':
-        LOGGER.info(f"训练设备：自动模式寻找中...")
         gm = GPUManager()
         return torch.device(gm.auto_choice())
     else:
@@ -65,20 +55,20 @@ def select_device(device_num):
 
 
 def main(params: Munch):
-    set_seeds(params)
     device = select_device(params.device_num)
     LOGGER.info(f"{colorstr('训练设备')}: {device}。")
     # 1. 数据集
     LOGGER.info(f"{colorstr('数据集')}: 开始加载{params.dataset_name}: ")
-    train_dataset = get_dataset(params.dataset_type, params.train_path)
-    test_dataset = get_dataset(params.dataset_type, params.test_path)
-    # sampler = DualSampler(train_dataset, params.batch_size) # TODO 可能需要进行上下采样
+    train_dataset = get_dataset(params.dataset_name, os.path.join(
+        params.dataset_path, params.dataset_name) + '/train.csv')
+    test_dataset = get_dataset(params.dataset_name, os.path.join(
+        params.dataset_path, params.dataset_name) + '/train.csv')
+
+    # sampler = DualSampler(train_dataset, params.batch_size)
     train_data_loader = DataLoader(train_dataset, batch_size=params.batch_size,  # sampler=sampler,
-                                   num_workers=16, shuffle=True)
-                                #    num_workers=16, shuffle=True, pin_memory=True)
+                                   num_workers=16, shuffle=True, pin_memory=True)
     test_data_loader = DataLoader(test_dataset, batch_size=params.batch_size,
-                                  num_workers=16, shuffle=False)  # num_workers是GPU数量的四倍。
-                                #   num_workers=16, shuffle=False, pin_memory=True)  # num_workers是GPU数量的四倍。
+                                  num_workers=16, shuffle=False, pin_memory=True)  # num_workers是GPU数量的四倍。
 
     LOGGER.info(f"{colorstr('数据集')}: 加载成功。")
     # 2. 根据数据集信息以及模型选择获取模型
@@ -87,10 +77,7 @@ def main(params: Munch):
     numerical_num = train_dataset.numerical_num
     task_num = train_dataset.labels_num
     model = get_model(params.model_name, field_dims, numerical_num, task_num,
-                      params.expert_num, params.embed_dim,
-                      bottom_mlp_dims=params.bottom_mlp_dims, tower_mlp_dims=params.tower_mlp_dims,
-                      dropout=params.dropout,
-                      )
+                      params.expert_num, params.embed_dim)
 
     # if 'compile' in dir(torch):
     #     LOGGER.info(f"{colorstr('Pytorch 2.0')} detected, compiling the model to speed up. ")
@@ -98,20 +85,13 @@ def main(params: Munch):
     #     # model = torch.compile(model, mode="max-autotune", fullgraph=True, backend='Eager')
     #     model = torch.compile(model, mode="max-autotune", fullgraph=True)
     #     LOGGER.info(f"{colorstr('Pytorch 2.0')} compilation done. ")
-    # dummy_input = (torch.zeros((params.batch_size, train_dataset.categorical_num)).to(torch.int64),
-    #                torch.zeros((params.batch_size, train_dataset.numerical_num)).to(torch.float32))
-    wrapped = MultitaskWrapper(model).to('cpu')
-    # dummy_input = (torch.zeros((2, train_dataset.categorical_num)).to(torch.int64),
-    #                torch.zeros((2, train_dataset.numerical_num)).to(torch.float32))
-    size = (train_dataset.categorical_num+train_dataset.numerical_num, )
-    dummy_input = torch.zeros((2, *size)).to('cpu')
-    tensorboard.add_graph(wrapped, input_to_model=dummy_input)
-    # print(model)
-    wrapped = wrapped.to('cuda')
-    print(summary(wrapped, size))
-    LOGGER.info(f"{colorstr('模型')}: 加载成功。")
-
+    dummy_input = (torch.zeros((params.batch_size, train_dataset.categorical_num)).to(torch.int64),
+                   torch.zeros((params.batch_size, train_dataset.numerical_num)).to(torch.float32))
+    tensorboard.add_graph(model, input_to_model=dummy_input)
     model = model.to(device)
+    # torch.nn.Module.device = device
+    print(model)
+    LOGGER.info(f"{colorstr('模型')}: 加载成功。")
 
     # weights 迁移 if
     weights = Path(params.weights or '').resolve()
@@ -142,7 +122,7 @@ def main(params: Munch):
         optimizer_taskLayer = get_optimizer0(
             model_weights=model.specific_parameters(), **params)
         # 多任务优化器
-        multitask_balancer = get_multi_balancer(params.balancer_name,
+        multitask_balancer = get_multi_balancer(params.balancer_name, 
                                                 model.shared_parameters(),
                                                 params.corr_factor)
         LOGGER.info(f"{colorstr('优化器')}: 加载完成，当前为平衡模式。 ")
@@ -152,8 +132,8 @@ def main(params: Munch):
                               optimizer_taskLayer=optimizer_taskLayer,
                               multitask_balancer=multitask_balancer,
                               data_loader=train_data_loader, criterion=criterion,
-                              device=device, do_balance=params.do_balance,
-                              step_callbacks=step_callbacks)
+                              device=device, do_balance=params.do_balance)
+        # raise NotImplementedError()
     else:
         optimizer = get_optimizer(model_weights=model.parameters(), model=model,
                                   criti=criterion, device=device, **params)
@@ -164,7 +144,6 @@ def main(params: Munch):
                               optimizer=optimizer, data_loader=train_data_loader,
                               criterion=criterion, device=device, do_balance=params.do_balance,
                               step_callbacks=step_callbacks)
-        # model, optimizer, train_data_loader = accelerator.prepare(model, optimizer, train_data_loader)
 
     # 创建新的实验记录
     save_dir = Path(params.save_dir).resolve().absolute()
@@ -176,10 +155,9 @@ def main(params: Munch):
             save_dir = exp_save_dir
             LOGGER.info(
                 f"{colorstr('实验管理')}: 数据集{params.dataset_name}新增实验{i}。")
-            if params.clearml:
-                from clearml import Task
-                clearml_task = Task.init(project_name='test_multitask' if params.just_test_can_run else params.dataset_name,
-                                         task_name=f'{params.model_name}+{params.categorical_loss}+{i}')
+            from clearml import Task
+            clearml_task = Task.init(project_name='test_multitask' if params.just_test_can_run else params.dataset_name,
+                                     task_name=f'{params.model_name}+{params.categorical_loss}+{i}')
             break
         i += 1
 
@@ -190,82 +168,57 @@ def main(params: Munch):
             optimizer.update_regularizer()
         # epoch_losses = list(map(lambda x:x.detach().cpu().numpy(), epoch_losses)) # requires grad要detach
 
-        # 在这里作了是否使用BCELoss的讨论，从而不使用auc，代码正确性未能保证 //from oyl
-        scores, losses = test(model, test_data_loader, task_num,
-                              device, epoch=epoch_i, step_callbacks=step_callbacks,
-                              loss_type=params.categorical_loss.lower())
+        aucs, losses = test(model, test_data_loader, task_num,
+                            device, epoch=epoch_i, step_callbacks=step_callbacks)
 
-        sco_data = {'avg_sco': np.array(scores).mean(), 'epoch': epoch_i}
+        auc_data = {'avg_auc': np.array(aucs).mean(), 'epoch': epoch_i}
         loss_data = {'avg_loss': np.array(losses).mean(), 'epoch': epoch_i}
-        tensorboard.add_scalar(f'avg_sco', np.array(scores).mean(), epoch_i)
+        tensorboard.add_scalar(f'avg_auc', np.array(aucs).mean(), epoch_i)
         tensorboard.add_scalar(
             f'avg_val_loss', np.array(losses).mean(), epoch_i)
         # train_loss_data = {'train_loss':np.array(epoch_losses).mean(), 'epoch': epoch_i}
         for i in range(task_num):
-            # LOGGER.info(f'task {i}, Score {scores[i]}, Log-loss {losses[i]}')
-            sco_data[f'score{i}'] = scores[i]
+            LOGGER.info(f'task {i}, AUC {aucs[i]}, Log-loss {losses[i]}')
+            auc_data[f'auc{i}'] = aucs[i]
             loss_data[f'loss{i}'] = losses[i][-1]
-            tensorboard.add_scalar(f'score{i}', scores[i], epoch_i)
+            tensorboard.add_scalar(f'auc{i}', aucs[i], epoch_i)
             tensorboard.add_scalar(f'val_loss{i}', losses[i][-1], epoch_i)
             # train_loss_data[f'loss{i}'] = epoch_losses[i] TODO 多任务loss
-        if params.wandb:
-            wandb.log(sco_data)
-            wandb.log(loss_data)
-            # wandb.log(train_loss_data)
+        wandb.log(auc_data)
+        wandb.log(loss_data)
+        # wandb.log(train_loss_data)
 
         if epoch_i % params.save_epoch == 0:
             save_path = save_dir / f"{params.model_name}_{epoch_i}.pt"
             torch.save(model.state_dict(), save_path)
             LOGGER.info(f"latest model saved to {save_path}")
 
-        if not early_stopper.is_continuable(epoch_i, np.array(scores).mean()):
+        if not early_stopper.is_continuable(epoch_i, np.array(aucs).mean()):
             LOGGER.info(
                 f"Early Stopper在{early_stopper.patience_counter}轮都没有改进后丧失了耐心，训练即将结束。")
             break
 
     LOGGER.info(
-        f'历史最佳 {early_stopper.best_score} 在第 {early_stopper.best_epoch} 轮达到。')
+        f'历史最佳AUC {early_stopper.best_score} 在第 {early_stopper.best_epoch} 轮达到。')
 
 
-def read_python_config(path, default_path="实验/default.py"):
-    exec(open(default_path).read())
-    # default_config = {k:v for k,v in locals().items() if not k.startswith('_')}
-    exec(open(path).read())
-    new_config = {k: v for k, v in locals().items() if not k.startswith('_')}
-    return DefaultMunch.fromDict(new_config)
+parser = argparse.ArgumentParser()
+parser.add_argument('--param', '--params', '-p',
+                    default='实验/corr_test.yaml')
+# parser.add_argument('--param', '--params', '-p', default='实验/test/metaheac_loss_new.yaml')
+args = parser.parse_args()
+args = yaml_load(args.param)
+params = DefaultMunch.fromDict(args)
 
+wandb.init(
+    # set the wandb project where this run will be logged
+    project="Multitask-Recommendation",
+    name=params.dataset_name
+)
+wandb.config.update(params)
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--param', '--params', '-p',
-                        # default='实验/NL_basic.yaml')
-                        # default='实验/default.py')
-                        # default='实验/default.yaml')
-                        default='实验/ple_run_shallow.yaml')
-    # parser.add_argument('--param', '--params', '-p', default='实验/test/metaheac_loss_new.yaml')
-    args = parser.parse_args()
-    args = yaml_load(args.param)
-    # override default parameters with custom yaml file
-    default = yaml_load('实验/default.yaml')
-    default.update(args)
-    params = DefaultMunch.fromDict(default)
-    # params = read_python_config(args.param)
-
-    def print_params(params):
-        LOGGER.info(colorstr('parameters: ') +
-                    ', '.join(f'{k}={v}' for k, v in params.items()))
-    if params.wandb:
-        wandb.init(
-            # set the wandb project where this run will be logged
-            project=params.project,
-            name=params.experiment_name
-        )
-        wandb.config.update(params)  # 可能会做一些调整
-        print_params(wandb.config)
-        main(wandb.config)
-    else:
-        print_params(params)
-        main(params)
-
+LOGGER.info(colorstr('parameters: ') +
+            ', '.join(f'{k}={v}' for k, v in params.items()))
+main(wandb.config)
 
 # %%

@@ -1,0 +1,298 @@
+wandb: wandb version 0.15.0 is available!  To upgrade, please run:
+wandb:  $ pip install wandb --upgrade
+wandb: Tracking run with wandb version 0.14.2
+wandb: Run data is saved locally in /home/yecm/public/Multitask-Recommendation-Library/wandb/run-20230424_214036-wbjtq6lh
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run MMoE_Synthetic
+wandb: ⭐️ View project at https://wandb.ai/open-book/Multitask-Recommendation
+wandb: 🚀 View run at https://wandb.ai/open-book/Multitask-Recommendation/runs/wbjtq6lh
+[34m[1mparameters: [0mdataset_name=MMoE_Synthetic, dataset_path=./data/, model_name=sharedbottom, expert_num=8, embed_dim=128, weights=None, categorical_loss=MSELoss, numeric_loss=None, optimizer_name=Adam, lr=0.001, weight_decay=1e-06, do_balance=True, balancer_name=CorrBalance, corr_factor=[1, 0.9], just_test_can_run=False, device_num=0, save_dir=runs/corr_test, save_epoch=4, max_epochs=50, batch_size=2048, patience=10, min_delta=0, cumulative_delta=False
+[34m[1m训练设备[0m: cuda:0。
+[34m[1m数据集[0m: 开始加载MMoE_Synthetic: 
+[34m[1m数据集[0m: 加载成功。
+[34m[1m模型[0m: 开始加载sharedbottom: 
+/home/yecm/.conda/envs/torch/lib/python3.11/site-packages/torch/jit/_trace.py:1056: TracerWarning: Encountering a list at the output of the tracer might cause the trace to be incorrect, this is only valid if the container structure does not change based on the module's inputs. Consider using a constant container instead (e.g. for `list`, use a `tuple` instead. for `dict`, use a `NamedTuple` instead). If you absolutely need this and know the side effects, pass strict=False to trace() to allow this behavior.
+  module._c._create_method_from_trace(
+[34m[1m模型[0m: 加载成功。
+[34m[1m损失函数[0m: 加载完成：MSELoss()。 
+[34m[1m优化器[0m: 加载完成，当前为平衡模式。 
+[34m[1m实验管理[0m: 数据集MMoE_Synthetic新增实验16。
+Model: Shared-Bottom
+SharedBottomModel(
+  (embedding): EmbeddingLayer(
+    (embedding): Embedding(0, 128)
+  )
+  (numerical_layer): Linear(in_features=50, out_features=128, bias=True)
+  (bottom): MultiLayerPerceptron(
+    (mlp): Sequential(
+      (0): Linear(in_features=128, out_features=512, bias=True)
+      (1): BatchNorm1d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (2): ReLU()
+      (3): Dropout(p=0.2, inplace=False)
+      (4): Linear(in_features=512, out_features=256, bias=True)
+      (5): BatchNorm1d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (6): ReLU()
+      (7): Dropout(p=0.2, inplace=False)
+    )
+  )
+  (tower): ModuleList(
+    (0-1): 2 x MultiLayerPerceptron(
+      (mlp): Sequential(
+        (0): Linear(in_features=256, out_features=128, bias=True)
+        (1): BatchNorm1d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (2): ReLU()
+        (3): Dropout(p=0.2, inplace=False)
+        (4): Linear(in_features=128, out_features=64, bias=True)
+        (5): BatchNorm1d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (6): ReLU()
+        (7): Dropout(p=0.2, inplace=False)
+        (8): Linear(in_features=64, out_features=1, bias=True)
+      )
+    )
+  )
+)
+ClearML Task: created new task id=b08e675a69a94008af7b1d3a93e5ddb8
+[34m[1m训练[0m: 终于可以开始啦! 
+ClearML results page: https://app.clear.ml/projects/9c3342c69e80438b9f5ec86ef7527bcc/experiments/b08e675a69a94008af7b1d3a93e5ddb8/output/log
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:01<00:00,  1.57s/it]100%|██████████| 1/1 [00:01<00:00,  1.79s/it]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.26it/s]
+latest model saved to /home/yecm/public/Multitask-Recommendation-Library/runs/corr_test/exp_16/sharedbottom_0.pt
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.10it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.38it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.22it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.27it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.18it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.21it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.24it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.28it/s]
+latest model saved to /home/yecm/public/Multitask-Recommendation-Library/runs/corr_test/exp_16/sharedbottom_4.pt
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.07it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.32it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.22it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.29it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.24it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.33it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.25it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.23it/s]
+latest model saved to /home/yecm/public/Multitask-Recommendation-Library/runs/corr_test/exp_16/sharedbottom_8.pt
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.06it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.25it/s]
+Early Stopper在10轮都没有改进后丧失了耐心，训练即将结束。
+历史最佳 0 在第 -1 轮达到。
+wandb: Waiting for W&B process to finish... (success).
+wandb: 
+wandb: Run history:
+wandb: avg_loss ███▇▇▆▅▄▃▁
+wandb:  avg_sco ▁▁▁▂▂▃▄▅▆█
+wandb:    epoch ▁▁▂▂▃▃▃▃▄▄▅▅▆▆▆▆▇▇██
+wandb:    loss0 ███▇▇▆▅▄▃▁
+wandb:    loss1 ███▇▇▆▅▄▃▁
+wandb:   score0 ▁▁▁▂▂▃▄▅▆█
+wandb:   score1 ▁▁▁▂▂▃▄▅▆█
+wandb: 
+wandb: Run summary:
+wandb: avg_loss 0.96234
+wandb:  avg_sco -0.00494
+wandb:    epoch 9
+wandb:    loss0 0.93902
+wandb:    loss1 0.98566
+wandb:   score0 0.01167
+wandb:   score1 -0.02155
+wandb: 
+wandb: 🚀 View run MMoE_Synthetic at: https://wandb.ai/open-book/Multitask-Recommendation/runs/wbjtq6lh
+wandb: Synced 6 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20230424_214036-wbjtq6lh/logs
+wandb: Currently logged in as: 2603119857 (open-book). Use `wandb login --relogin` to force relogin
+wandb: wandb version 0.15.0 is available!  To upgrade, please run:
+wandb:  $ pip install wandb --upgrade
+wandb: Tracking run with wandb version 0.14.2
+wandb: Run data is saved locally in /home/yecm/public/Multitask-Recommendation-Library/wandb/run-20230424_214620-zhinlz80
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run MMoE_Synthetic
+wandb: ⭐️ View project at https://wandb.ai/open-book/Multitask-Recommendation
+wandb: 🚀 View run at https://wandb.ai/open-book/Multitask-Recommendation/runs/zhinlz80
+[34m[1mparameters: [0mdataset_name=MMoE_Synthetic, dataset_path=./data/, model_name=sharedbottom, expert_num=8, embed_dim=128, weights=None, categorical_loss=MSELoss, numeric_loss=None, optimizer_name=Adam, lr=0.001, weight_decay=1e-06, do_balance=True, balancer_name=CorrBalance, corr_factor=[1, 0.9], just_test_can_run=False, device_num=0, save_dir=runs/corr_test, save_epoch=4, max_epochs=50, batch_size=2048, patience=10, min_delta=0, cumulative_delta=False
+[34m[1m训练设备[0m: cuda:0。
+[34m[1m数据集[0m: 开始加载MMoE_Synthetic: 
+[34m[1m数据集[0m: 加载成功。
+[34m[1m模型[0m: 开始加载sharedbottom: 
+/home/yecm/.conda/envs/torch/lib/python3.11/site-packages/torch/jit/_trace.py:1056: TracerWarning: Encountering a list at the output of the tracer might cause the trace to be incorrect, this is only valid if the container structure does not change based on the module's inputs. Consider using a constant container instead (e.g. for `list`, use a `tuple` instead. for `dict`, use a `NamedTuple` instead). If you absolutely need this and know the side effects, pass strict=False to trace() to allow this behavior.
+  module._c._create_method_from_trace(
+[34m[1m模型[0m: 加载成功。
+[34m[1m损失函数[0m: 加载完成：MSELoss()。 
+[34m[1m优化器[0m: 加载完成，当前为平衡模式。 
+[34m[1m实验管理[0m: 数据集MMoE_Synthetic新增实验17。
+Model: Shared-Bottom
+SharedBottomModel(
+  (embedding): EmbeddingLayer(
+    (embedding): Embedding(0, 128)
+  )
+  (numerical_layer): Linear(in_features=50, out_features=128, bias=True)
+  (bottom): MultiLayerPerceptron(
+    (mlp): Sequential(
+      (0): Linear(in_features=128, out_features=512, bias=True)
+      (1): BatchNorm1d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (2): ReLU()
+      (3): Dropout(p=0.2, inplace=False)
+      (4): Linear(in_features=512, out_features=256, bias=True)
+      (5): BatchNorm1d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (6): ReLU()
+      (7): Dropout(p=0.2, inplace=False)
+    )
+  )
+  (tower): ModuleList(
+    (0-1): 2 x MultiLayerPerceptron(
+      (mlp): Sequential(
+        (0): Linear(in_features=256, out_features=128, bias=True)
+        (1): BatchNorm1d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (2): ReLU()
+        (3): Dropout(p=0.2, inplace=False)
+        (4): Linear(in_features=128, out_features=64, bias=True)
+        (5): BatchNorm1d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+        (6): ReLU()
+        (7): Dropout(p=0.2, inplace=False)
+        (8): Linear(in_features=64, out_features=1, bias=True)
+      )
+    )
+  )
+)
+ClearML Task: created new task id=51901ba9ce9e4e7f992b911b9edbdb30
+[34m[1m训练[0m: 终于可以开始啦! 
+ClearML results page: https://app.clear.ml/projects/9c3342c69e80438b9f5ec86ef7527bcc/experiments/51901ba9ce9e4e7f992b911b9edbdb30/output/log
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:01<00:00,  1.52s/it]100%|██████████| 1/1 [00:01<00:00,  1.74s/it]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.30it/s]
+latest model saved to /home/yecm/public/Multitask-Recommendation-Library/runs/corr_test/exp_17/sharedbottom_0.pt
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.11it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.39it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.34it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.26it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.25it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.24it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.24it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.31it/s]
+latest model saved to /home/yecm/public/Multitask-Recommendation-Library/runs/corr_test/exp_17/sharedbottom_4.pt
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.09it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.31it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.24it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.25it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.23it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.26it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.21it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.26it/s]
+latest model saved to /home/yecm/public/Multitask-Recommendation-Library/runs/corr_test/exp_17/sharedbottom_8.pt
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.08it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.27it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.31it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.25it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.21it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.37it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.33it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.23it/s]
+latest model saved to /home/yecm/public/Multitask-Recommendation-Library/runs/corr_test/exp_17/sharedbottom_12.pt
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.04it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.22it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.26it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.28it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.24it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.29it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.31it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.26it/s]
+latest model saved to /home/yecm/public/Multitask-Recommendation-Library/runs/corr_test/exp_17/sharedbottom_16.pt
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.04it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.22it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.23it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.29it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.31it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.25it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.17it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.18it/s]
+latest model saved to /home/yecm/public/Multitask-Recommendation-Library/runs/corr_test/exp_17/sharedbottom_20.pt
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.04it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.25it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.22it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.20it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.28it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.26it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.20it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.27it/s]
+latest model saved to /home/yecm/public/Multitask-Recommendation-Library/runs/corr_test/exp_17/sharedbottom_24.pt
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.07it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.33it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.33it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.26it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.18it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.35it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.17it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.25it/s]
+latest model saved to /home/yecm/public/Multitask-Recommendation-Library/runs/corr_test/exp_17/sharedbottom_28.pt
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.07it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.26it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.19it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.26it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.20it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.27it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.20it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.27it/s]
+latest model saved to /home/yecm/public/Multitask-Recommendation-Library/runs/corr_test/exp_17/sharedbottom_32.pt
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.11it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.23it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.13it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.37it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.24it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.26it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.23it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.29it/s]
+latest model saved to /home/yecm/public/Multitask-Recommendation-Library/runs/corr_test/exp_17/sharedbottom_36.pt
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.06it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.25it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.21it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.26it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.21it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.25it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.22it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.25it/s]
+latest model saved to /home/yecm/public/Multitask-Recommendation-Library/runs/corr_test/exp_17/sharedbottom_40.pt
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.05it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.33it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.21it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.35it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.19it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.27it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.24it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.25it/s]
+latest model saved to /home/yecm/public/Multitask-Recommendation-Library/runs/corr_test/exp_17/sharedbottom_44.pt
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.07it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.36it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.24it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.25it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.22it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.28it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.33it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.28it/s]
+latest model saved to /home/yecm/public/Multitask-Recommendation-Library/runs/corr_test/exp_17/sharedbottom_48.pt
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.07it/s]
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00,  1.26it/s]
+历史最佳 0.4257899673473211 在第 49 轮达到。
+wandb: Waiting for W&B process to finish... (success).
+wandb: 
+wandb: Run history:
+wandb: avg_loss ████▇▇▇▆▅▅▄▄▃▃▃▂▂▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:  avg_sco ▁▁▁▁▂▂▂▃▄▄▅▅▆▆▆▇▇▇▇▇▇▇██████████████████
+wandb:    epoch ▁▁▁▁▂▂▂▂▂▃▃▃▃▃▃▄▄▄▄▄▅▅▅▅▅▅▆▆▆▆▆▇▇▇▇▇▇███
+wandb:    loss0 ████▇▇▇▆▅▅▄▄▃▃▂▂▂▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:    loss1 ████▇▇▇▆▅▅▄▄▃▃▃▂▂▂▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:   score0 ▁▁▁▁▂▂▂▃▄▄▅▅▆▆▇▇▇▇▇▇▇▇██████████████████
+wandb:   score1 ▁▁▁▁▂▂▂▃▄▄▅▅▆▆▆▇▇▇▇▇▇▇▇█████████████████
+wandb: 
+wandb: Run summary:
+wandb: avg_loss 0.54986
+wandb:  avg_sco 0.42579
+wandb:    epoch 49
+wandb:    loss0 0.53799
+wandb:    loss1 0.56172
+wandb:   score0 0.43376
+wandb:   score1 0.41782
+wandb: 
+wandb: 🚀 View run MMoE_Synthetic at: https://wandb.ai/open-book/Multitask-Recommendation/runs/zhinlz80
+wandb: Synced 6 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20230424_214620-zhinlz80/logs

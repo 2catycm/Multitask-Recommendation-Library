@@ -1,0 +1,78 @@
+# 0. 实验配置 与 训练过程配置
+# 名称
+project : "Multitask-Recommendation"
+experiment_name : "default experiment"
+# 实验性质
+wandb: False
+clearml: False
+deterministic : False
+seed : None
+just_test_can_run : True
+# 实验设备
+device_num : auto
+# 实验组别
+save_dir : 'runs/default'
+# 训练周期数
+save_epoch : 4
+max_epochs : 1
+# 训练停止标准
+patience : 10
+min_delta : 0
+cumulative_delta : False
+
+# 1. 数据集有关参数
+# 语义升级，这只是作为一个名字，而不是构造数据集的标准
+# choices:['AliExpress_NL', 'AliExpress_ES', 'AliExpress_FR', 'AliExpress_US']
+dataset_name : 'Synthetic'
+# 这是数据集的Python类型
+# dataset_type : datasets.SynDataset # 不能是类型，不然不好整参数
+dataset_type : SynDataset
+# 语义升级，表示可以构造Dataset对象所传递的参数
+train_path : './data/Synthetic/train(-0.3).csv'
+test_path : './data/Synthetic/test(-0.3).csv'
+batch_size : 2048
+
+
+# 2. 模型选择。包括模型内部的参数选择。
+# model_name: 'ple' # choices:['singletask', 'sharedbottom', 'omoe', 'mmoe', 'ple', 'aitm', 'metaheac']
+# choices:['singletask', 'sharedbottom', 'omoe', 'mmoe', 'ple', 'aitm', 'metaheac']
+model_name : 'sharedbottom'
+expert_num : 8
+embed_dim : 128
+weights : None
+
+bottom_mlp_dims: [512, 256]
+tower_mlp_dims: [128, 64]
+dropout: 0.2
+
+# 3. 基础loss的选择
+categorical_loss : "MSELoss"  # choices:[BCELoss, MSELoss, AUCMLoss]
+numeric_loss : None
+
+# 3.1离散型分类任务
+# 3.1.1普通分布
+# criterion : torch.nn.BCELoss()
+# 3.1.2类别不平衡
+# 3.2连续型回归任务
+# criterion : torch.nn.MSELoss()
+
+# 4. 优化器
+# 4.1 基础优化器
+# optimizer_name: PESG
+optimizer_name : "Adam"
+lr : 1.0e-2
+weight_decay : 1.0e-3
+
+
+# 5. 多任务平衡器选择
+# do_balance: false
+do_balance : True  # todo: set false
+balancer_name : "CorrBalance"
+corr_factor : [1, -0.3]
+
+# 6. 训练器的选择
+# trainer: default  # balance_train, meta_train
+# 不允许选择，需要自动推导。
+
+
+

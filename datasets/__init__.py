@@ -10,12 +10,13 @@ if str(project_directory) not in sys.path:
 
 from datasets.aliexpress import AliExpressDataset
 from datasets.mmoe_synthetic import SynDataset
+from datasets.abstract_dataset import MultitaskDataset
 
 import joblib
 memory = joblib.Memory('./joblib_tmp', verbose=1)
 
 @memory.cache
-def get_dataset(type, path):
+def get_dataset(type, path)->MultitaskDataset:
     """数据集工厂
 
     Args:
@@ -36,12 +37,16 @@ def get_dataset(type, path):
             if not rel_path.exists():
                 raise FileNotFoundError('cannot find dataset: ' + str(path))
         path = rel_path.resolve().absolute()
-    if 'AliExpress' in type:
+    if 'AliExpressDataset' in type:
         return AliExpressDataset(path)
-    elif 'Synthetic' in type:
+    elif 'SynDataset' in type:
         return SynDataset(path)
     else:
         raise ValueError('unknown dataset name: ' + type)
+    
+    # exec(f'res = {type}(path)')
+    # return res
+    # return type(path)
     
 def get_dataset_by_yaml(type, path):
     raise NotImplementedError
