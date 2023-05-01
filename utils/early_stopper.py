@@ -7,7 +7,7 @@ class EarlyStopper(object):
         self.cumulative_delta = cumulative_delta
     
         self.patience_counter = 0
-        self.best_score = 0
+        self.best_score = -torch.inf
         self.best_epoch = -1
 
     def is_continuable(self, epoch_i, score):
