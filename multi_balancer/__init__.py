@@ -9,11 +9,17 @@ if str(project_directory) not in sys.path:
     
 #%%    
 from multi_balancer.metabalance import *
-def get_multi_balancer(balancer_name, shared_params, relax_factor=0.7, beta=0.9):
+from multi_balancer.corrbalance import *
+def get_multi_balancer(balancer_name, shared_params, corr_factor=None, relax_factor=0.7, beta=0.9):
     lower_name = balancer_name.lower()
-    return {
-        'metabalance':MetaBalance(shared_params, relax_factor, beta),
-    }[lower_name]
+    if corr_factor == None:
+        corr_factor = []
+    # shared_params = list(shared_params)
+    if lower_name == 'metabalance':
+        return MetaBalance(shared_params, relax_factor, beta)
+    elif lower_name == 'corrbalance':
+        return CorrBalance(shared_params, corr_factor, relax_factor, beta)
+
 
 #%%
 
