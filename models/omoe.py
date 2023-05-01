@@ -12,14 +12,19 @@ class OMoEModel(MultitaskModel):
         Ma, Jiaqi, et al. Modeling task relationships in multi-task learning with multi-gate mixture-of-experts. KDD 2018.
     """
 
-    def __init__(self, categorical_field_dims, numerical_num, embed_dim, bottom_mlp_dims, tower_mlp_dims, task_num, expert_num, dropout):
-        super().__init__()
+    def __init__(self, categorical_field_dims, numerical_num, task_num, 
+                 embed_dim, bottom_mlp_dims, tower_mlp_dims, 
+                 dropout, expert_num
+                 ,*args, **kwargs):
+        super().__init__(categorical_field_dims, numerical_num, task_num, 
+                 embed_dim, bottom_mlp_dims, tower_mlp_dims, 
+                 dropout)
+        # 共享的特征预处理层
         self.embedding = EmbeddingLayer(categorical_field_dims, embed_dim)
         self.numerical_layer = torch.nn.Linear(numerical_num, embed_dim)
         self.embed_output_dim = (len(categorical_field_dims) + 1) * embed_dim
-        self.task_num = task_num
+        # 底层网络和上层网络
         self.expert_num = expert_num
-
         self.expert = torch.nn.ModuleList([MultiLayerPerceptron(
             self.embed_output_dim, bottom_mlp_dims, dropout, output_layer=False) for i in range(expert_num)])
         self.tower = torch.nn.ModuleList([MultiLayerPerceptron(
@@ -28,11 +33,6 @@ class OMoEModel(MultitaskModel):
             self.embed_output_dim, expert_num), torch.nn.Softmax(dim=1))
 
     def forward(self, categorical_x, numerical_x):
-        """
-        :param 
-        categorical_x: Long tensor of size ``(batch_size, categorical_field_dims)``
-        numerical_x: Long tensor of size ``(batch_size, numerical_num)``
-        """
         categorical_emb = self.embedding(categorical_x)
         numerical_emb = self.numerical_layer(numerical_x).unsqueeze(1)
         emb = torch.cat([categorical_emb, numerical_emb],
@@ -47,7 +47,8 @@ class OMoEModel(MultitaskModel):
         return results
 
     def specific_parameters(self):
-        return self.parameters_selected([self.expert, self.tower])
+        return self.parameters_selected([self.tower])
 
     def shared_parameters(self):
-        return self.parameters_selected([self.gate, self.embedding, self.numerical_layer])
+        # expert 是共用的，gate也是公用的。
+        return self.parameters_selected([self.expert, self.gate, self.embedding, self.numerical_layer])

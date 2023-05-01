@@ -11,21 +11,29 @@ class PLEModel(MultitaskModel):
         Tang, Hongyan, et al. Progressive layered extraction (ple): A novel multi-task learning (mtl) model for personalized recommendations. RecSys 2020.
     """
 
-    def __init__(self, categorical_field_dims, numerical_num, embed_dim, bottom_mlp_dims, tower_mlp_dims, task_num, shared_expert_num, specific_expert_num, dropout):
-        super().__init__()
+    def __init__(self, categorical_field_dims, numerical_num, task_num,
+                 embed_dim, bottom_mlp_dims, tower_mlp_dims, dropout,
+                 shared_expert_num, specific_expert_num
+                 ,*args, **kwargs):
+        super().__init__(categorical_field_dims, numerical_num, task_num,
+                         embed_dim, bottom_mlp_dims, tower_mlp_dims, dropout)
+        # 共享的特征预处理层
         self.embedding = EmbeddingLayer(categorical_field_dims, embed_dim)
         self.numerical_layer = torch.nn.Linear(numerical_num, embed_dim)
         self.embed_output_dim = (len(categorical_field_dims) + 1) * embed_dim
-        self.task_num = task_num
+        # 底层网络和上层网络
         self.shared_expert_num = shared_expert_num
         self.specific_expert_num = specific_expert_num
         self.layers_num = len(bottom_mlp_dims)
-
+        # self.layers_num = layers_num
+        # 每个任务有自己的expert和gate
         self.task_experts = [
-            [0] * self.task_num for _ in range(self.layers_num)]
-        self.task_gates = [[0] * self.task_num for _ in range(self.layers_num)]
-        self.share_experts = [0] * self.layers_num
-        self.share_gates = [0] * self.layers_num
+            [None] * self.task_num for _ in range(self.layers_num)]
+        self.task_gates = [
+            [None] * self.task_num for _ in range(self.layers_num)]
+        # 中间大家一起共享了一些expert和gate
+        self.share_experts = [None] * self.layers_num
+        self.share_gates = [None] * self.layers_num
         for i in range(self.layers_num):
             input_dim = self.embed_output_dim if 0 == i else bottom_mlp_dims[i - 1]
             self.share_experts[i] = torch.nn.ModuleList([MultiLayerPerceptron(input_dim, [
@@ -49,18 +57,13 @@ class PLEModel(MultitaskModel):
             bottom_mlp_dims[-1], tower_mlp_dims, dropout) for i in range(task_num)])
 
     def forward(self, categorical_x, numerical_x):
-        """
-        :param 
-        categorical_x: Long tensor of size ``(batch_size, categorical_field_dims)``
-        numerical_x: Long tensor of size ``(batch_size, numerical_num)``
-        """
         categorical_emb = self.embedding(categorical_x)
         numerical_emb = self.numerical_layer(numerical_x).unsqueeze(1)
         emb = torch.cat([categorical_emb, numerical_emb],
                         1).view(-1, self.embed_output_dim)
 
         # task1 input ,task2 input,..taskn input, share_expert input
-        task_fea = [emb for i in range(self.task_num + 1)]
+        task_fea = [emb for i in range(self.task_num + 1)] # 为他们准备输入
         for i in range(self.layers_num):
             share_output = [expert(task_fea[-1]).unsqueeze(1)
                             for expert in self.share_experts[i]]
@@ -72,7 +75,8 @@ class PLEModel(MultitaskModel):
                 mix_ouput = torch.cat(task_output+share_output, dim=1)
                 gate_value = self.task_gates[i][j](task_fea[j]).unsqueeze(1)
                 task_fea[j] = torch.bmm(gate_value, mix_ouput).squeeze(1)
-            if i != self.layers_num-1:  # 最后一层不需要计算share expert 的输出
+            # 如果不是最后一层，需要计算share expert 的输出
+            if i != self.layers_num-1:  # not last layer
                 gate_value = self.share_gates[i](task_fea[-1]).unsqueeze(1)
                 mix_ouput = torch.cat(task_output_list + share_output, dim=1)
                 task_fea[-1] = torch.bmm(gate_value, mix_ouput).squeeze(1)
