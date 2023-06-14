@@ -3,6 +3,7 @@ from models.abstract_multitask_model import MultitaskModel, MultitaskWrapper
 from models.metaheac import MetaHeacModel
 from models.aitm import AITMModel
 from models.ple import PLEModel
+from models.dense_ple import DensePLEModel
 from models.mmoe import MMoEModel
 from models.omoe import OMoEModel
 from models.singletask import SingleTaskModel
@@ -58,6 +59,13 @@ def get_model(name, categorical_field_dims, numerical_num, task_num,
                         embed_dim=embed_dim, bottom_mlp_dims=bottom_mlp_dims, tower_mlp_dims=tower_mlp_dims,
                         dropout=dropout,
                         shared_expert_num=int(expert_num / 2), specific_expert_num=int(expert_num / 2), *args, **kwargs)
+    elif name == 'dense_ple':
+        print("Model: DensePLE")
+        return DensePLEModel(categorical_field_dims, numerical_num, task_num,
+                        embed_dim=embed_dim, bottom_mlp_dims=bottom_mlp_dims, tower_mlp_dims=tower_mlp_dims,
+                        dropout=dropout,
+                        shared_expert_num=int(expert_num / 2), specific_expert_num=int(expert_num / 2), *args, **kwargs)
+        
     elif name == 'aitm':
         print("Model: AITM")
         return AITMModel(categorical_field_dims, numerical_num, task_num,
