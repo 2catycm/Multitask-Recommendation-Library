@@ -10,6 +10,7 @@ if str(project_directory) not in sys.path:
 
 from datasets.aliexpress import AliExpressDataset
 from datasets.mmoe_synthetic import SynDataset
+from datasets.pkuszh_pe import PkuszhPE
 from datasets.abstract_dataset import MultitaskDataset
 
 import joblib
@@ -41,6 +42,8 @@ def get_dataset(type, path)->MultitaskDataset:
         return AliExpressDataset(path)
     elif 'SynDataset' in type:
         return SynDataset(path)
+    elif 'PkuszhPE' in type:
+        return PkuszhPE(path)
     else:
         raise ValueError('unknown dataset name: ' + type)
     
