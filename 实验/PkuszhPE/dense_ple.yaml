@@ -1,7 +1,7 @@
 # 0. 实验配置 与 训练过程配置
 # 名称
-project : "Multitask-Recommendation"
-experiment_name : "PLE+推荐系统 深层验证实验"
+project : "PkuszhPE"
+experiment_name : "DensePLE训练"
 # 实验性质
 wandb: True
 clearml: True
@@ -9,9 +9,10 @@ deterministic : False
 seed : None
 just_test_can_run : False
 # 实验设备
-device_num : auto
+# device_num : auto
+device_num : 2,3
 # 实验组别
-save_dir : 'runs/ple_run'
+save_dir : 'runs/dense_ple_run'
 # 训练周期数
 save_epoch : 4
 max_epochs : 100
@@ -23,25 +24,29 @@ cumulative_delta : False
 # 1. 数据集有关参数
 # 语义升级，这只是作为一个名字，而不是构造数据集的标准
 # choices:['AliExpress_NL', 'AliExpress_ES', 'AliExpress_FR', 'AliExpress_US']
-dataset_name : 'AliExpress_US'
+dataset_name : 'PkuszhPE-v2'
 # 这是数据集的Python类型
 # dataset_type : datasets.SynDataset # 不能是类型，不然不好整参数
-dataset_type : AliExpressDataset
+dataset_type : PkuszhPE
 # 语义升级，表示可以构造Dataset对象所传递的参数
-train_path : './data/AliExpress_US/train.csv'
-test_path : './data/AliExpress_US/test.csv'
-batch_size : 4096
+train_path : './data/PkuszhPE/train.csv'
+test_path : './data/PkuszhPE/test.csv'
+# batch_size : 2048
+# batch_size : 512
+# batch_size : 1024
+batch_size : 2048
+# batch_size : 1536
 
 
 # 2. 模型选择。包括模型内部的参数选择。
 # choices:['singletask', 'sharedbottom', 'omoe', 'mmoe', 'ple', 'aitm', 'metaheac']
-model_name : 'ple'
+model_name : 'dense_ple'
 expert_num : 8
 # 输入维度是81, 
 embed_dim : 128
 weights : None
-bottom_mlp_dims: [512, 256]
-tower_mlp_dims: [128, 64]
+bottom_mlp_dims: [512,256, 256, 256, 256, 256, 256, 256,256, 256, 256, 256, 256, 256, 256, 256, 256, 256] # 9倍， 18层
+tower_mlp_dims: [256, 256, 256, 256, 128, 64] # 3倍
 dropout: 0.2
 
 # 3. 基础loss的选择
@@ -58,12 +63,11 @@ weight_decay : 1.0e-6
 # balancer_name : "CorrBalance"
 # corr_factor : [1, 1]
 
-# do_balance : True
-# balancer_name : "MetaBalance"
-
 do_balance: False
+# balancer_name : "MetaBalance"
+# balancer_name : "CorrBalance"
+# corr_factor : [1, 1]
 
+
+# 6.
 sampling: False
-
-
-

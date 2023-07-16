@@ -1,5 +1,11 @@
 # To run train.py, use this code: python train.py --params 实验/NL_basic.yaml
 # %%
+
+import re
+import global_vars
+from tensorboardX import SummaryWriter
+global_vars.tensorboard = SummaryWriter('./tensorboard_log')
+
 import argparse
 import wandb
 from libauc.sampler import DualSampler
@@ -12,6 +18,8 @@ from torch.utils.data import DataLoader
 import os
 import numpy as np
 from callbacks.debug_step_callback import JustTestCanRun
+# from imblearn.over_sampling import RandomOverSampler
+from sampler.sampler import ClassAwareSampler
 
 
 from datasets import get_dataset
@@ -30,12 +38,14 @@ from val import *
 
 from munch import DefaultMunch, Munch
 
-from tensorboardX import SummaryWriter
-tensorboard = SummaryWriter('./tensorboard_log')
 
 # from accelerate import Accelerator
 # accelerator = Accelerator()
 from torchsummary import summary
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import torch.optim as optim
 # %%
 
 
@@ -58,8 +68,17 @@ def select_device(device_num):
         LOGGER.info(f"训练设备：自动模式寻找中...")
         gm = GPUManager()
         return torch.device(gm.auto_choice())
-    else:
+    elif device_num.startswith('cuda'):
         return torch.device(device_num)
+    else:
+        try:
+            device_num = int(device_num)
+            return torch.device(device_num)
+        except:
+            try:
+                return select_device('auto'), list(map(int, re.split(',\s*', device_num)))
+            except Exception as e:
+                raise ValueError(f"无法识别的设备编号{device_num}。\n{e}")
 
 # %%
 
@@ -67,15 +86,26 @@ def select_device(device_num):
 def main(params: Munch):
     set_seeds(params)
     device = select_device(params.device_num)
-    LOGGER.info(f"{colorstr('训练设备')}: {device}。")
+    if isinstance(device, tuple):
+        device, device_ids = device
+        # 多卡情况
+        LOGGER.info(f"{colorstr('训练设备')}: {params.device_num}。")
+    else:
+        LOGGER.info(f"{colorstr('训练设备')}: {device}。")
     # 1. 数据集
     LOGGER.info(f"{colorstr('数据集')}: 开始加载{params.dataset_name}: ")
     train_dataset = get_dataset(params.dataset_type, params.train_path)
     test_dataset = get_dataset(params.dataset_type, params.test_path)
-    # sampler = DualSampler(train_dataset, params.batch_size) # TODO 可能需要进行上下采样
-    train_data_loader = DataLoader(train_dataset, batch_size=params.batch_size,  # sampler=sampler,
-                                   num_workers=16, shuffle=True)
-                                #    num_workers=16, shuffle=True, pin_memory=True)
+
+    if params.get('sampling', False):
+        
+        sampler = ClassAwareSampler(train_dataset, num_samples_cls=4) # TODO 使用sampler进行采样
+        train_data_loader = DataLoader(train_dataset, batch_size=params.batch_size,  sampler=sampler,
+                                    num_workers=16, shuffle=False)
+                                    #    num_workers=16, shuffle=True, pin_memory=True)
+    else:
+        train_data_loader = DataLoader(train_dataset, batch_size=params.batch_size, 
+                                    num_workers=16, shuffle=True)
     test_data_loader = DataLoader(test_dataset, batch_size=params.batch_size,
                                   num_workers=16, shuffle=False)  # num_workers是GPU数量的四倍。
                                 #   num_workers=16, shuffle=False, pin_memory=True)  # num_workers是GPU数量的四倍。
@@ -111,6 +141,7 @@ def main(params: Munch):
     print(summary(wrapped, size))
     LOGGER.info(f"{colorstr('模型')}: 加载成功。")
 
+    # if not isinstance(device, list):
     model = model.to(device)
 
     # weights 迁移 if
@@ -147,6 +178,9 @@ def main(params: Munch):
                                                 params.corr_factor)
         LOGGER.info(f"{colorstr('优化器')}: 加载完成，当前为平衡模式。 ")
         # 5. 获得训练器
+        if 'device_ids' in locals().keys():
+            model = nn.DataParallel(model, device_ids=device_ids)
+        
         trainer = get_trainer(params.model_name, model=model,
                               optimizer_sharedLayer=optimizer_sharedLayer,
                               optimizer_taskLayer=optimizer_taskLayer,
@@ -160,6 +194,8 @@ def main(params: Munch):
         # LOGGER.info(f"{colorstr('优化器')}: 加载完成：{optimizer}。 ")
         LOGGER.info(f"{colorstr('优化器')}: 加载完成。 ")
         # 6. 获得训练器
+        if isinstance(device, list):
+            model = nn.DataParallel(model, device_ids=device)
         trainer = get_trainer(params.model_name, model=model,
                               optimizer=optimizer, data_loader=train_data_loader,
                               criterion=criterion, device=device, do_balance=params.do_balance,
@@ -180,10 +216,14 @@ def main(params: Munch):
                 from clearml import Task
                 clearml_task = Task.init(project_name='test_multitask' if params.just_test_can_run else params.dataset_name,
                                          task_name=f'{params.model_name}+{params.categorical_loss}+{i}')
+                # clearml_task.get_logger().report_
+                clearml_task.connect_configuration(configuration=dict(params))
             break
         i += 1
 
     LOGGER.info(f"{colorstr('训练')}: 终于可以开始啦! ")
+    
+    
     for epoch_i in range(params.max_epochs):
         epoch_losses = trainer.train_epoch()
         if params.categorical_loss.lower() == 'AUCMLoss'.lower():
@@ -241,7 +281,9 @@ if __name__ == '__main__':
                         # default='实验/NL_basic.yaml')
                         # default='实验/default.py')
                         # default='实验/default.yaml')
-                        default='实验/ple_run_shallow.yaml')
+                        # default='实验/ple_run_shallow.yaml')
+                        default='实验/dense_ple.yaml')
+                        # default='实验/dense_ple_test.yaml')
     # parser.add_argument('--param', '--params', '-p', default='实验/test/metaheac_loss_new.yaml')
     args = parser.parse_args()
     args = yaml_load(args.param)
@@ -254,7 +296,10 @@ if __name__ == '__main__':
     def print_params(params):
         LOGGER.info(colorstr('parameters: ') +
                     ', '.join(f'{k}={v}' for k, v in params.items()))
-    if params.wandb:
+    global_vars.wandb = params.get("wandb", False)
+    global_vars.clearml = params.get("clearml", False)
+    
+    if global_vars.wandb:
         wandb.init(
             # set the wandb project where this run will be logged
             project=params.project,

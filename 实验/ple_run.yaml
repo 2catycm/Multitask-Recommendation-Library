@@ -3,7 +3,7 @@
 project : "Multitask-Recommendation"
 experiment_name : "PLE+推荐系统 深层验证实验"
 # 实验性质
-wandb: False
+wandb: True
 clearml: True
 deterministic : False
 seed : None
@@ -54,10 +54,15 @@ lr : 1.0e-3
 weight_decay : 1.0e-6
 
 # 5. 多任务平衡器选择
-do_balance : False 
+# do_balance : False 
+# balancer_name : "CorrBalance"
+# corr_factor : [1, 1]
+
+do_balance: True
+balancer_name : "MetaBalance"
 # balancer_name : "CorrBalance"
 # corr_factor : [1, 1]
 
 
-
-
+# 6.
+sampling: True

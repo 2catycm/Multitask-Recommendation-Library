@@ -30,12 +30,12 @@ dataset_type : AliExpressDataset
 # 语义升级，表示可以构造Dataset对象所传递的参数
 train_path : './data/AliExpress_US/train.csv'
 test_path : './data/AliExpress_US/test.csv'
-batch_size : 4096
+batch_size : 2048
 
 
 # 2. 模型选择。包括模型内部的参数选择。
 # choices:['singletask', 'sharedbottom', 'omoe', 'mmoe', 'ple', 'aitm', 'metaheac']
-model_name : 'ple'
+model_name : 'dense_ple'
 expert_num : 8
 # 输入维度是81, 
 embed_dim : 128
@@ -58,12 +58,10 @@ weight_decay : 1.0e-6
 # balancer_name : "CorrBalance"
 # corr_factor : [1, 1]
 
-# do_balance : True
+do_balance: False
 # balancer_name : "MetaBalance"
 
-do_balance: False
+
+
 
 sampling: False
-
-
-

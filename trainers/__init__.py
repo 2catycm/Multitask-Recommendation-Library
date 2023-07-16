@@ -2,8 +2,16 @@ from abc import abstractmethod
 import numpy as np
 import tqdm
 import wandb
-from tensorboardX import SummaryWriter
-tensorboard = SummaryWriter('./tensorboard_log')
+# from tensorboardX import SummaryWriter
+# tensorboard = SummaryWriter('./tensorboard_log')
+
+import global_vars
+tensorboard = global_vars.tensorboard
+
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import torch.optim as optim
 
 def get_trainer(model_name, do_balance, **kargs):
     if model_name == 'metaheac':
@@ -40,14 +48,23 @@ class DefaultTrainer(MultitaskTrainer):
             y = self.model(categorical_fields, numerical_fields)
             loss_list = [self.criterion(y[i], labels[:, i].float()) for i in range(labels.size(1))]
             loss = 0
-            for item in loss_list:
+            for j, item in enumerate(loss_list):
+                self.model.zero_grad()
+                item.backward(retain_graph=True)
+                if global_vars.wandb:
+                    norms = [torch.norm(p.grad.reshape(-1), p=2) 
+                            for p in self.model.shared_parameters() if p.grad is not None]
+                    norm = torch.norm(torch.stack(norms), p=2) # 这就是勾股定理
+                    wandb.log({f'grad_norm_{j}': norm.item(), 'epoch': self.epoch, 'step': i})
                 loss += item
             loss /= len(loss_list)
-            self.model.zero_grad()
             loss.backward()
-
+        
             self.optimizer.step()
+            self.model.zero_grad()
+            
             total_loss += loss.item()
+            # total_loss += loss
             if (i + 1) % self.log_interval == 0:
                 loader.set_postfix(loss=total_loss / self.log_interval)
                 # wandb.log({'step_loss':total_loss / self.log_interval, 'epoch': self.epoch, 'step': i})

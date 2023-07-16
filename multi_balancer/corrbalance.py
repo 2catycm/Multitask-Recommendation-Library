@@ -11,6 +11,8 @@ import torch
 from torch.optim.optimizer import Optimizer
 import time
 import numpy as np
+import wandb
+import global_vars
 
 
 class CorrBalance(Optimizer):
@@ -73,11 +75,15 @@ class CorrBalance(Optimizer):
 
             # calculate moving averages of gradient magnitudes
             beta = group['beta']
-            p.norms[loss_index] = (p.norms[loss_index]*beta) + ((1-beta)*torch.norm(p.grad))
+            current_grad_norm = torch.norm(p.grad)
+            p.norms[loss_index] = (p.norms[loss_index]*beta) + ((1-beta)*current_grad_norm)
 
             # narrow the magnitude gap between the main gradient and each auxilary gradient
             relax_factor = group['relax_factor']
             co_factor = group['corr_factor']
+            # 
+            if global_vars.wandb:
+              wandb.log({f"grad_magnitude_task{loss_index}": current_grad_norm.item()})
             p.grad = (p.norms[0] * p.grad/ p.norms[loss_index]) * relax_factor + p.grad * (1.0 - relax_factor)
 
             if loss_index == 0:

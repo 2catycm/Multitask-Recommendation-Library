@@ -55,7 +55,8 @@ weight_decay : 1.0e-6
 
 # 5. 多任务平衡器选择
 do_balance : True 
-balancer_name : "CorrBalance"
+# balancer_name : "CorrBalance"
+balancer_name : "MetaBalance"
 corr_factor : [1, -0.3]
 
 

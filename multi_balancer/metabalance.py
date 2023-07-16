@@ -11,7 +11,8 @@ import torch
 from torch.optim.optimizer import Optimizer
 import time
 import numpy as np
-
+import wandb
+import global_vars
 
 class MetaBalance(Optimizer):
     r"""Implements MetaBalance algorithm.
@@ -68,14 +69,22 @@ class MetaBalance(Optimizer):
             # State initialization
             if len(state) == 0:
               for j, _ in enumerate(loss_array):
-                if j == 0: p.norms = [torch.zeros(1).cuda()]
-                else: p.norms.append(torch.zeros(1).cuda())
+                # if j == 0: p.norms = [torch.zeros(1).cuda()]
+                # else: p.norms.append(torch.zeros(1).cuda())
+                if j == 0: p.norms = [torch.zeros(1).to(p.device)]
+                else: p.norms.append(torch.zeros(1).to(p.device))
 
             # calculate moving averages of gradient magnitudes
             beta = group['beta']
-            p.norms[loss_index] = (p.norms[loss_index]*beta) + ((1-beta)*torch.norm(p.grad))
+            
+            current_grad_norm = torch.norm(p.grad)
+            p.norms[loss_index] = (p.norms[loss_index]*beta) + ((1-beta)*current_grad_norm)
 
             # narrow the magnitude gap between the main gradient and each auxilary gradient
+            if global_vars.wandb:
+              wandb.log({f"grad_magnitude_task{loss_index}": current_grad_norm.item()})
+            
+
             relax_factor = group['relax_factor']
             p.grad = (p.norms[0] * p.grad/ p.norms[loss_index]) * relax_factor + p.grad * (1.0 - relax_factor)
 
