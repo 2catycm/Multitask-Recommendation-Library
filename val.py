@@ -8,7 +8,7 @@ tensorboard = SummaryWriter('./tensorboard_log')
 
 # 我对使用的模型进行了讨论，代码的正确性不能保证 //from oyl
 def test(model, data_loader, task_num, device, epoch=0, step_callbacks=None, loss_type='MSELoss'.lower()):
-    if loss_type == 'BCELoss'.lower():
+    if loss_type == 'BCELoss'.lower() or loss_type == 'BCEWithLogitsLoss'.lower() or loss_type == 'AUCMLoss'.lower():
         model.eval()
         labels_dict, predicts_dict, loss_dict = {}, {}, {}
         for i in range(task_num):

@@ -155,9 +155,11 @@ class BalanceTrainer(MultitaskTrainer):
     def train_epoch(self):
         self.model.train()
         total_loss = 0
-        total_losses = np.array([0, 0])
+        total_losses = None
         tqdmloader = tqdm.tqdm(self.data_loader, smoothing=0, mininterval=1.0, desc=f'Training Epoch {self.epoch} by BalanceTrainer')
         for i, (categorical_fields, numerical_fields, labels) in enumerate(tqdmloader):
+            if total_losses is None:
+                total_losses = np.zeros(labels.size(1))
             # 从数据集中读取数据，计算输出和loss。
             categorical_fields, numerical_fields, labels = categorical_fields.to(
                 self.device), numerical_fields.to(self.device), labels.to(self.device)

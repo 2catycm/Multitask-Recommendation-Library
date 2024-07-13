@@ -9,8 +9,7 @@ deterministic : False
 seed : None
 just_test_can_run : False
 # 实验设备
-# device_num : auto
-device_num : 2,3
+device_num : auto
 # 实验组别
 save_dir : 'runs/dense_ple_run'
 # 训练周期数
@@ -31,44 +30,50 @@ dataset_type : PkuszhPE
 # 语义升级，表示可以构造Dataset对象所传递的参数
 train_path : './data/PkuszhPE/train.csv'
 test_path : './data/PkuszhPE/test.csv'
-# batch_size : 2048
-# batch_size : 512
-batch_size : 128
-# batch_size : 1024
-# batch_size : 2048
-# batch_size : 1536
+# batch_size: 512
+# batch_size: 128
+# batch_size: 32
+# batch_size: 56
+# batch_size: 64
+batch_size: 1024
 
 
 # 2. 模型选择。包括模型内部的参数选择。
 # choices:['singletask', 'sharedbottom', 'omoe', 'mmoe', 'ple', 'aitm', 'metaheac']
 model_name : 'dense_ple'
-expert_num : 8
+# expert_num : 8
+expert_num : 32
+# expert_num : 64
 # 输入维度是81, 
 embed_dim : 128
-weights : None
-bottom_mlp_dims: [512,256, 256, 256, 256, 256, 256, 256,256, 256, 256, 256, 256, 256, 256, 256, 256, 256] # 9倍， 18层
-tower_mlp_dims: [256, 256, 256, 256, 128, 64] # 3倍
-dropout: 0.2
+weights : 'runs/dense_ple_run/exp_5/dense_ple_12.pt'
+bottom_mlp_dims: [512, 256]
+tower_mlp_dims: [128, 64]
+# bottom_mlp_dims: [512, 256, 256, 256]
+# tower_mlp_dims: [256, 256, 128, 64]
+dropout: 0.5
 
 # 3. 基础loss的选择
 categorical_loss : "BCELoss" 
 numeric_loss : None
 
 # 4. 优化器
+# optimizer_name : "AdamW"
 optimizer_name : "Adam"
-lr : 1.0e-3
-weight_decay : 1.0e-6
+# lr : 1.0e-3
+lr : 3.0e-6
+# weight_decay : 1.0e-6
+weight_decay : 1.0e-2
 
 # 5. 多任务平衡器选择
-# do_balance : False 
+do_balance : False 
 # balancer_name : "CorrBalance"
 # corr_factor : [1, 1]
 
-do_balance: False
+# do_balance: True
 # balancer_name : "MetaBalance"
-# balancer_name : "CorrBalance"
-# corr_factor : [1, 1]
 
 
-# 6.
-sampling: False
+
+
+sampling: True
